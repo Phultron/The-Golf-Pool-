@@ -792,25 +792,23 @@ function detectMismatches(){
   if(!S.field.length){alert('Load the tournament field first (Setup tab).');return;}
   const espnNames=S.field.map(f=>f.name);
   const unmatchedWrap=document.getElementById('namemap-unmatched-wrap');
-  // Find DK salary names not in ESPN field
   const unmatched=Object.keys(S.salaries).filter(dk=>!espnNames.includes(dk));
   if(!unmatched.length){
     unmatchedWrap.innerHTML='<div class="alert-i" style="margin:0">✓ All salary names match ESPN names perfectly!</div>';
     renderSavedMaps();return;
   }
-  // Build suggestions
   const rows=unmatched.map(dk=>{
     const suggestion=fuzzyMatch(dk,espnNames);
     return{dk,suggestion};
   });
   unmatchedWrap.innerHTML=`
-    <div class="alert-w" style="margin-bottom:.65rem">⚠ ${unmatched.length} DraftKings name${unmatched.length!==1?'s':''} don't match ESPN. Map them below:</div>
+    <div class="alert-w" style="margin-bottom:.65rem">⚠ ${unmatched.length} DraftKings name${unmatched.length!==1?'s':''} don't match ESPN. Map or remove them below:</div>
     <div style="border:1px solid var(--bdr);border-radius:6px;overflow:hidden">
-      <div class="map-row" style="background:var(--bg3);font-size:.68rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);font-weight:500;padding:.35rem .6rem">
-        <div>DraftKings Name</div><div></div><div>Map to ESPN Name</div><div></div>
+      <div class="map-row" style="background:var(--bg3);font-size:.68rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);font-weight:500;padding:.35rem .6rem;grid-template-columns:1fr auto 1fr auto auto">
+        <div>DraftKings Name</div><div></div><div>Map to ESPN Name</div><div></div><div></div>
       </div>
       ${rows.map(({dk,suggestion})=>`
-      <div class="map-row" style="padding:.4rem .6rem">
+      <div class="map-row" style="padding:.4rem .6rem;grid-template-columns:1fr auto 1fr auto auto;gap:.4rem">
         <div class="map-dk">${dk}</div>
         <div class="map-arrow">→</div>
         <div>
@@ -820,9 +818,20 @@ function detectMismatches(){
           </select>
         </div>
         <button class="btn bp bsm" onclick="confirmMap('${encodeURIComponent(dk)}')" style="white-space:nowrap">Map</button>
+        <button class="btn bd bsm" onclick="removeSalary('${encodeURIComponent(dk)}')" title="Remove from salary list" style="white-space:nowrap">✕ Remove</button>
       </div>`).join('')}
     </div>`;
   renderSavedMaps();
+}
+
+function removeSalary(encodedDk){
+  const dk=decodeURIComponent(encodedDk);
+  if(!confirm(`Remove "${dk}" from the salary list? This won't affect any picks already made.`))return;
+  delete S.salaries[dk];
+  save();
+  detectMismatches();
+  renderFieldTable();
+  renderFieldTab();
 }
 
 function confirmMap(encodedDk){
