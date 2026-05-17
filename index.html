@@ -635,30 +635,26 @@ async function fetchField(){
 }
 async function debugAPI(){
   const el=document.getElementById('debug-out');
+  if(!el)return;
   el.style.display='block';el.textContent='Fetching...';
   try{
     const r=await fetch(ESPN);const d=await r.json();
-    const ev=d.events?.[0];
-    const comp=ev?.competitions?.[0]?.competitors?.[0];
+    const ev=d.events&&d.events[0];
+    const comp=ev&&ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors&&ev.competitions[0].competitors[0];
+    const top3=(ev&&ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors||[]).slice(0,3).map(function(p){
+      return{name:p.athlete&&p.athlete.displayName,score:p.score,scoreStr:JSON.stringify(p.score)};
+    });
     const out={
-      eventName:ev?.name,
-      eventStatus:ev?.status?.type?.description,
-      totalCompetitors:ev?.competitions?.[0]?.competitors?.length,
-      firstPlayer:{
-        name:comp?.athlete?.displayName,
-        scoreRaw:comp?.score,
-        scoreType:typeof comp?.score,
-        scoreKeys:comp?.score?Object.keys(comp.score):[],
-        statusName:comp?.status?.type?.name,
-        posDisplay:comp?.status?.position?.displayName,
-        linescore0:comp?.linescores?.[0]?.displayValue,
-      },
-      // Show first 3 players name + score
-      top3:ev?.competitions?.[0]?.competitors?.slice(0,3).map(p=>({
-        name:p?.athlete?.displayName,
-        score:p?.score,
-        scoreStr:JSON.stringify(p?.score)
-      }))
+      eventName:ev&&ev.name,
+      totalCompetitors:ev&&ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors&&ev.competitions[0].competitors.length,
+      firstPlayer:comp?{
+        name:comp.athlete&&comp.athlete.displayName,
+        scoreRaw:comp.score,
+        scoreType:typeof comp.score,
+        scoreKeys:comp.score&&typeof comp.score==='object'?Object.keys(comp.score):[],
+        status:comp.status&&comp.status.type&&comp.status.type.name
+      }:null,
+      top3:top3
     };
     el.textContent=JSON.stringify(out,null,2);
   }catch(err){el.textContent='Error: '+err.message;}
