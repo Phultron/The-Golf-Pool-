@@ -164,7 +164,13 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
 
 <!-- FIELD -->
 <div id="tab-field" class="tc">
-  <div class="fb mb1"><h2>Tournament Field</h2><button class="btn bs bsm" onclick="fetchField()">↻ Refresh</button></div>
+  <div class="fb mb1"><h2>Tournament Field</h2>
+    <div class="flex" style="gap:.5rem">
+      <button class="btn bs bsm" onclick="fetchField()">↻ Refresh</button>
+      <button class="btn bs bsm" onclick="debugAPI()">🔍 Debug API</button>
+    </div>
+  </div>
+  <div id="debug-out" style="display:none;background:var(--bg3);border:1px solid var(--bdr);border-radius:6px;padding:.75rem;margin-bottom:.9rem;font-family:var(--fm);font-size:.75rem;color:var(--txt2);white-space:pre-wrap;max-height:300px;overflow-y:auto"></div>
   <div id="field-list"><div class="muted">Select a tournament in Setup first.</div></div>
 </div>
 
@@ -627,7 +633,36 @@ async function fetchField(){
     if(document.getElementById('tab-draft').classList.contains('active'))renderDraft();
   }catch(err){console.error('Field fetch error:',err);}
 }
-function renderFieldTab(){
+async function debugAPI(){
+  const el=document.getElementById('debug-out');
+  el.style.display='block';el.textContent='Fetching...';
+  try{
+    const r=await fetch(ESPN);const d=await r.json();
+    const ev=d.events?.[0];
+    const comp=ev?.competitions?.[0]?.competitors?.[0];
+    const out={
+      eventName:ev?.name,
+      eventStatus:ev?.status?.type?.description,
+      totalCompetitors:ev?.competitions?.[0]?.competitors?.length,
+      firstPlayer:{
+        name:comp?.athlete?.displayName,
+        scoreRaw:comp?.score,
+        scoreType:typeof comp?.score,
+        scoreKeys:comp?.score?Object.keys(comp.score):[],
+        statusName:comp?.status?.type?.name,
+        posDisplay:comp?.status?.position?.displayName,
+        linescore0:comp?.linescores?.[0]?.displayValue,
+      },
+      // Show first 3 players name + score
+      top3:ev?.competitions?.[0]?.competitors?.slice(0,3).map(p=>({
+        name:p?.athlete?.displayName,
+        score:p?.score,
+        scoreStr:JSON.stringify(p?.score)
+      }))
+    };
+    el.textContent=JSON.stringify(out,null,2);
+  }catch(err){el.textContent='Error: '+err.message;}
+}
   const el=document.getElementById('field-list');if(!S.field.length){el.innerHTML='<div class="muted">No field loaded.</div>';return;}
   const sorted=[...S.field].sort((a,b)=>s2n(a.score)-s2n(b.score));
   el.innerHTML=`<table class="lbt"><thead><tr><th>Pos</th><th>Player</th><th>Score</th><th>Salary</th><th>Status</th></tr></thead><tbody>
