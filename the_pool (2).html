@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>The Pool ⛳</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1a6b3a;--gl:#2d9e58;--gd:#0f4023;
+  --gold:#c9a84c;--gol:#f0d080;
+  --red:#c0392b;--rl:#e74c3c;
+  --bg:#0a1a0f;--bg2:#0f2518;--bg3:#162f1e;
+  --sur:#1a3824;--sur2:#223f2d;
+  --txt:#e8f5ec;--txt2:#a8c9b4;--txt3:#6b9e7e;
+  --bdr:#2d5a3d;
+  --fd:'Bebas Neue',sans-serif;
+  --fb:'DM Sans',sans-serif;
+  --fm:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--txt);font-family:var(--fb);min-height:100vh;font-size:15px}
+h2{font-family:var(--fd);letter-spacing:1.5px;font-size:1.4rem;color:var(--gold)}
+h3{font-family:var(--fd);letter-spacing:1px;font-size:1.05rem}
+.nav{background:var(--bg2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;flex-wrap:wrap;padding:0 1.25rem}
+.nav-title{font-family:var(--fd);font-size:1.5rem;letter-spacing:3px;color:var(--gold);margin-right:auto;padding:.9rem 0;white-space:nowrap}
+.nt{background:none;border:none;color:var(--txt2);font-family:var(--fb);font-size:.8rem;font-weight:500;padding:.9rem 1rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase;letter-spacing:.4px}
+.nt:hover{color:var(--txt)}.nt.active{color:var(--gold);border-bottom-color:var(--gold)}
+.admin-badge{font-size:.62rem;background:rgba(201,168,76,.15);color:var(--gold);border:1px solid var(--gold);border-radius:20px;padding:.1rem .45rem;margin-left:.35rem;vertical-align:middle}
+.tc{display:none;padding:1.5rem;max-width:1200px;margin:0 auto}.tc.active{display:block}
+.card{background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.25rem;margin-bottom:.9rem}
+.btn{font-family:var(--fb);cursor:pointer;border-radius:5px;font-size:.83rem;font-weight:500;transition:all .15s;padding:.45rem 1rem;border:none}
+.bp{background:var(--gl);color:#fff}.bp:hover{background:var(--green)}
+.bs{background:transparent;color:var(--txt2);border:1px solid var(--bdr)}.bs:hover{border-color:var(--txt2);color:var(--txt)}
+.bg_{background:var(--gold);color:var(--bg);font-weight:600}.bg_:hover{background:var(--gol)}
+.bd{background:var(--red);color:#fff}.bd:hover{background:var(--rl)}
+.bsm{padding:.25rem .6rem;font-size:.75rem}
+input[type=text],input[type=number],select,textarea{background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:5px;padding:.4rem .7rem;font-family:var(--fb);font-size:.88rem;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gl)}
+label{font-size:.75rem;color:var(--txt2);font-weight:500;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:.25rem}
+input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
+.sc{font-family:var(--fm);font-size:.85rem;font-weight:500;padding:.15rem .45rem;border-radius:4px;display:inline-block}
+.scu{background:rgba(45,158,88,.2);color:#4dcc7a}
+.sco{background:rgba(192,57,43,.2);color:#e74c3c}
+.sce{background:rgba(168,201,180,.12);color:var(--txt2)}
+.sal-bar-wrap{height:6px;background:var(--bdr);border-radius:3px;overflow:hidden;flex:1}
+.sal-bar{height:100%;border-radius:3px;transition:width .3s}
+.sal-ok{background:var(--gl)}.sal-warn{background:var(--gold)}.sal-over{background:var(--red)}
+.prow{background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:.9rem 1.1rem;margin-bottom:.65rem;transition:border-color .2s}
+.prow.elim{border-color:var(--red);background:rgba(192,57,43,.07)}
+.prow.lead{border-color:var(--gold)}
+.pname{font-family:var(--fd);font-size:1.15rem;letter-spacing:1px}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.45rem}
+.chip{font-size:.72rem;padding:.15rem .5rem;border-radius:20px;border:1px solid var(--bdr);color:var(--txt2)}
+.chip.mc{border-color:var(--gl);color:#4dcc7a}
+.chip.xc{border-color:var(--red);color:var(--rl);text-decoration:line-through}
+.tbanner{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.4rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.65rem}
+.tname{font-family:var(--fd);font-size:1.7rem;letter-spacing:2px;color:var(--gold)}
+.tmeta{font-size:.8rem;color:var(--txt3)}
+.spill{font-size:.72rem;font-weight:600;padding:.2rem .65rem;border-radius:20px;text-transform:uppercase;letter-spacing:.4px}
+.slive{background:rgba(45,158,88,.2);color:#4dcc7a;border:1px solid var(--gl)}
+.spre{background:rgba(201,168,76,.13);color:var(--gold);border:1px solid var(--gold)}
+.sfin{background:rgba(168,201,180,.08);color:var(--txt3);border:1px solid var(--bdr)}
+.pot{text-align:center;padding:1.25rem;background:var(--sur);border:1px solid var(--gold);border-radius:8px;margin-bottom:1.25rem}
+.pot-amt{font-family:var(--fd);font-size:2.8rem;color:var(--gold);letter-spacing:3px}
+.lbt{width:100%;border-collapse:collapse}
+.lbt th{font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);padding:.45rem .7rem;border-bottom:1px solid var(--bdr);text-align:left;font-weight:500}
+.lbt td{padding:.5rem .7rem;border-bottom:1px solid rgba(45,90,61,.22);font-size:.84rem}
+.lbt tr:last-child td{border-bottom:none}
+.lbt tr:hover td{background:rgba(255,255,255,.02)}
+.hist-card{background:var(--sur);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:.75rem}
+.hist-head{padding:.75rem 1.1rem;background:var(--bg2);display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.hist-head:hover{background:var(--bg3)}
+.hist-body{padding:1rem 1.1rem;display:none}
+.hist-body.open{display:block}
+.paste-area{background:var(--bg3);border:2px dashed var(--bdr);border-radius:8px;padding:1rem;transition:border-color .2s;margin-bottom:.65rem}
+.paste-area:focus-within{border-color:var(--gl)}
+.paste-area textarea{background:transparent;border:none;resize:vertical;min-height:90px;font-size:.82rem;font-family:var(--fm);color:var(--txt2);width:100%}
+.paste-area textarea:focus{outline:none;border:none}
+.flt{width:100%;border-collapse:collapse}
+.flt th{font-size:.68rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);padding:.35rem .6rem;border-bottom:1px solid var(--bdr);text-align:left;font-weight:500;position:sticky;top:0;background:var(--sur)}
+.flt td{padding:.38rem .6rem;border-bottom:1px solid rgba(45,90,61,.18);font-size:.82rem}
+.flt tr:last-child td{border-bottom:none}
+.flt tr:hover td{background:rgba(255,255,255,.025)}
+.field-scroll{max-height:320px;overflow-y:auto;border:1px solid var(--bdr);border-radius:6px}
+.admin-section{border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:1rem 1.2rem;background:rgba(201,168,76,.04);margin-bottom:.9rem}
+.admin-section h3{color:var(--gold)}
+.flex{display:flex;align-items:center;gap:.65rem}
+.fb{display:flex;align-items:center;justify-content:space-between}
+.mt1{margin-top:.65rem}.mt2{margin-top:1.1rem}.mb1{margin-bottom:.65rem}.mb05{margin-bottom:.4rem}
+.muted{color:var(--txt3);font-size:.83rem}
+.sm{font-size:.8rem}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--bdr);border-top-color:var(--gl);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.alert-i{padding:.65rem .9rem;border-radius:6px;font-size:.83rem;margin-bottom:.9rem;background:rgba(45,158,88,.1);border:1px solid var(--green);color:var(--txt2)}
+.alert-w{padding:.65rem .9rem;border-radius:6px;font-size:.83rem;margin-bottom:.9rem;background:rgba(201,168,76,.1);border:1px solid var(--gold);color:var(--gold)}
+.alert-r{padding:.65rem .9rem;border-radius:6px;font-size:.83rem;margin-bottom:.9rem;background:rgba(192,57,43,.12);border:1px solid var(--red);color:var(--rl)}
+.medal{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:.8rem}
+.m1{background:var(--gold);color:var(--bg)}.m2{background:#b0bec5;color:var(--bg)}.m3{background:#a0855c;color:var(--bg)}
+.tag{background:var(--sur2);border:1px solid var(--bdr);border-radius:20px;padding:.15rem .55rem .15rem .7rem;font-size:.78rem;display:inline-flex;align-items:center;gap:.3rem}
+.tag button{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:.95rem;line-height:1;padding:0}
+/* Draft */
+.draft-wrap{background:var(--bg2);border:1px solid var(--gold);border-radius:10px;overflow:hidden;margin-bottom:1rem}
+.draft-header{background:rgba(201,168,76,.12);padding:1rem 1.25rem;border-bottom:1px solid rgba(201,168,76,.25)}
+.draft-title{font-family:var(--fd);font-size:1.5rem;letter-spacing:2px;color:var(--gold)}
+.draft-round-info{font-size:.82rem;color:var(--txt2);margin-top:.15rem}
+.on-clock{background:var(--sur2);border:1px solid var(--bdr);border-radius:8px;padding:1.1rem 1.25rem;margin:1rem 1rem .75rem}
+.on-clock-name{font-family:var(--fd);font-size:2rem;letter-spacing:2px;color:var(--txt);margin-bottom:.1rem}
+.on-clock-meta{font-size:.8rem;color:var(--txt3)}
+.draft-queue{padding:.75rem 1.25rem;border-top:1px solid var(--bdr);display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.dq-item{font-size:.75rem;padding:.2rem .55rem;border-radius:20px;border:1px solid var(--bdr);color:var(--txt3);white-space:nowrap}
+.dq-item.next{border-color:var(--gl);color:var(--gl)}
+.draft-board{margin:0 1rem 1rem;border:1px solid var(--bdr);border-radius:6px;overflow-x:auto}
+.db-row{display:grid;border-bottom:1px solid rgba(45,90,61,.2);font-size:.82rem}
+.db-row:last-child{border-bottom:none}
+.db-row.header-row{background:var(--bg3);font-size:.68rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3)}
+.db-cell{padding:.4rem .6rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.db-row.current-round{background:rgba(201,168,76,.05)}
+.snake-dir{font-size:.65rem;color:var(--txt3);padding:.1rem .3rem}
+.pick-panel{padding:0 1rem .9rem}
+.pick-row{display:grid;grid-template-columns:1fr auto;gap:.65rem;align-items:end;margin-bottom:.5rem}
+.budget-bar-row{display:flex;align-items:center;gap:.6rem;margin:0 1rem .75rem}
+.budget-label{font-size:.78rem;color:var(--txt3);white-space:nowrap}
+.budget-amt{font-family:var(--fm);font-size:.82rem;white-space:nowrap}
+.swap-panel{background:rgba(192,57,43,.08);border:1px solid var(--red);border-radius:8px;padding:1rem;margin:0 1rem .9rem}
+.swap-panel h4{font-family:var(--fd);letter-spacing:1px;font-size:.95rem;color:var(--rl);margin-bottom:.6rem}
+.swap-row{display:grid;grid-template-columns:1fr 1fr auto;gap:.5rem;align-items:end;margin-bottom:.4rem}
+.order-list{list-style:none;counter-reset:ord}
+.order-list li{counter-increment:ord;display:flex;align-items:center;gap:.5rem;padding:.35rem 0;border-bottom:1px solid rgba(45,90,61,.2);font-size:.88rem}
+.order-list li:last-child{border-bottom:none}
+.order-list li::before{content:counter(ord);font-family:var(--fm);font-size:.75rem;color:var(--txt3);width:18px;text-align:right;flex-shrink:0}
+/* Name mapping */
+.map-row{display:grid;grid-template-columns:1fr auto 1fr auto;gap:.5rem;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(45,90,61,.18);font-size:.83rem}
+.map-row:last-child{border-bottom:none}
+.map-arrow{color:var(--txt3);font-size:.9rem;text-align:center}
+.map-dk{font-family:var(--fm);font-size:.78rem;color:var(--rl);padding:.25rem .5rem;background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.25);border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.map-espn{font-family:var(--fm);font-size:.78rem;color:#4dcc7a}
+.unmatched-badge{display:inline-block;background:rgba(192,57,43,.15);color:var(--rl);border:1px solid rgba(192,57,43,.3);border-radius:20px;font-size:.7rem;padding:.1rem .5rem;margin-left:.4rem}
+@media(max-width:700px){.nt{padding:.7rem .6rem;font-size:.72rem}.pick-row{grid-template-columns:1fr}.swap-row{grid-template-columns:1fr 1fr}.swap-row button{grid-column:1/-1}.map-row{grid-template-columns:1fr auto 1fr auto}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-title">⛳ THE POOL</span>
+  <button class="nt active" onclick="showTab('standings',this)">Standings</button>
+  <button class="nt" onclick="showTab('field',this)">Field</button>
+  <button class="nt" onclick="showTab('draft',this)">Draft</button>
+  <button class="nt" onclick="showTab('setup',this)">Setup</button>
+  <button class="nt" onclick="showTab('history',this)">History</button>
+  <button class="nt" onclick="showTab('settings',this)">Settings<span class="admin-badge" id="admin-nav-badge" style="display:none">ADMIN</span></button>
+</nav>
+
+<!-- STANDINGS -->
+<div id="tab-standings" class="tc active">
+  <div id="tbanner"></div>
+  <div class="pot">
+    <div class="muted sm" style="text-transform:uppercase;letter-spacing:1px">Total Pot</div>
+    <div class="pot-amt" id="pot-amt">$0</div>
+    <div class="muted mt1" id="pot-sub">0 participants · $10/entry</div>
+  </div>
+  <div id="standings-list"><div class="alert-i">Head to <strong>Setup</strong> then run the <strong>Draft</strong>.</div></div>
+</div>
+
+<!-- FIELD -->
+<div id="tab-field" class="tc">
+  <div class="fb mb1"><h2>Tournament Field</h2><button class="btn bs bsm" onclick="fetchField()">↻ Refresh</button></div>
+  <div id="field-list"><div class="muted">Select a tournament in Setup first.</div></div>
+</div>
+
+<!-- DRAFT -->
+<div id="tab-draft" class="tc">
+  <div id="draft-container"></div>
+</div>
+
+<!-- SETUP -->
+<div id="tab-setup" class="tc">
+  <h2 class="mb1">Tournament Setup</h2>
+  <div class="card">
+    <div class="fb mb1"><h3>Tournament</h3><span class="admin-badge" id="tourn-admin-badge" style="display:none">ADMIN</span></div>
+    <div id="tourn-admin-controls" style="display:none">
+      <div class="flex mb05"><div style="flex:1"><select id="tourn-sel" onchange="onTournSel()"><option value="">Loading...</option></select></div>
+        <button class="btn bs bsm" onclick="fetchSchedule()">↻</button></div>
+      <div id="tourn-detail" class="muted sm mt1"></div>
+    </div>
+    <div id="tourn-locked-view"><div id="tourn-locked-text" class="muted sm">No tournament selected. Admin must set the tournament.</div></div>
+  </div>
+  <div class="card" id="field-sal-card" style="display:none">
+    <div class="fb mb1">
+      <h3>Field &amp; Salaries</h3>
+      <div class="flex" style="gap:.5rem">
+        <input type="text" id="field-search" placeholder="Search..." oninput="renderFieldTable()" style="width:140px;padding:.3rem .6rem;font-size:.78rem">
+        <span class="sm muted" id="field-count"></span>
+      </div>
+    </div>
+    <div id="sal-paste-section" style="display:none;margin-bottom:.9rem">
+      <div class="alert-w mb05">Admin: paste Excel cells (Name ⇥ Salary) below, then click Import.</div>
+      <div class="paste-area mb05"><textarea id="sal-paste" placeholder="Scottie Scheffler&#9;13900&#10;Rory McIlroy&#9;12400&#10;..."></textarea></div>
+      <button class="btn bp bsm" onclick="importPaste()">Import Salaries</button>
+      <span id="import-msg" class="sm muted" style="margin-left:.5rem"></span>
+    </div>
+    <div class="field-scroll">
+      <table class="flt"><thead><tr><th>#</th><th>Player</th><th>Score</th><th>Salary</th><th>Picks</th></tr></thead>
+      <tbody id="field-sal-body"></tbody></table>
+    </div>
+  </div>
+  <div class="card">
+    <h3 class="mb1">Participants</h3>
+    <div id="ptags" class="flex" style="flex-wrap:wrap;gap:.35rem;margin-bottom:.65rem"></div>
+    <div class="flex"><input type="text" id="new-p" placeholder="Add participant..." style="flex:1" onkeydown="if(event.key==='Enter')addP()">
+      <button class="btn bp bsm" onclick="addP()">Add</button></div>
+  </div>
+  <div class="card">
+    <div class="fb mb1">
+      <h3>Draft Order</h3>
+      <div class="flex" style="gap:.5rem">
+        <button class="btn bp bsm" onclick="randomizeDraftOrder()">🔀 Randomize</button>
+        <button class="btn bs bsm" onclick="resetDraft()">Reset Draft</button>
+      </div>
+    </div>
+    <div class="muted sm mb1">Round 1 order shown. Snake reverses each round.</div>
+    <ol class="order-list" id="order-list"></ol>
+  </div>
+  <button class="btn bg_ mt1" onclick="startDraft()" style="width:100%;padding:.65rem">Start Draft →</button>
+</div>
+
+<!-- HISTORY -->
+<div id="tab-history" class="tc">
+  <div class="fb mb1"><h2>Past Tournaments</h2><span class="sm muted" id="hist-count"></span></div>
+  <div id="history-list"><div class="muted">No past tournaments yet.</div></div>
+</div>
+
+<!-- SETTINGS -->
+<div id="tab-settings" class="tc">
+  <h2 class="mb1">Settings</h2>
+  <div class="card">
+    <h3 class="mb1">Admin Mode</h3>
+    <div class="muted sm mb1">Admin controls tournament selection and salary entry.</div>
+    <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;margin:0"><input type="checkbox" id="admin-toggle" onchange="toggleAdmin()"> I am the admin</label>
+    <div class="mt1"><label>Admin Name</label><input type="text" id="admin-name" placeholder="e.g. Andrew" onchange="saveSettings()" style="width:180px"></div>
+  </div>
+  <div class="card"><h3 class="mb1">Budget Cap</h3>
+    <div class="flex"><label style="white-space:nowrap;margin:0;color:var(--txt)">DraftKings Cap ($):</label>
+      <input type="number" id="cap-input" value="50000" style="width:110px" onchange="saveSettings()"></div></div>
+  <div class="card"><h3 class="mb1">Entry Fee</h3>
+    <div class="flex"><label style="white-space:nowrap;margin:0;color:var(--txt)">$ per participant:</label>
+      <input type="number" id="fee-input" value="10" style="width:90px" onchange="saveSettings()"></div></div>
+  <div class="card"><h3 class="mb1">Cut Rule</h3>
+    <div class="flex"><label style="white-space:nowrap;margin:0;color:var(--txt)">Min golfers to survive cut:</label>
+      <input type="number" id="cutmin-input" min="1" max="6" value="4" style="width:70px" onchange="saveSettings()"></div></div>
+  <div class="card"><h3 class="mb1">Max picks per golfer</h3>
+    <div class="flex"><label style="white-space:nowrap;margin:0;color:var(--txt)">Max times a golfer can be drafted:</label>
+      <input type="number" id="maxpick-input" min="1" max="11" value="2" style="width:70px" onchange="saveSettings()"></div></div>
+  <div class="card">
+    <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;margin:0;font-size:1rem;text-transform:none;letter-spacing:0;color:var(--txt)">
+      <input type="checkbox" id="cut-official" onchange="saveSettings();renderStandings()"> Cut is now official — eliminate participants below threshold
+    </label>
+  </div>
+  <div class="admin-section" id="namemap-section" style="display:none">
+    <h3 class="mb1">🔗 Name Mapping <span class="admin-badge">ADMIN ONLY</span></h3>
+    <div class="muted sm mb1">Map DraftKings names to ESPN names when they don't match exactly. Unmatched salaries won't link to live scores.</div>
+    <div id="namemap-unmatched-wrap" style="margin-bottom:.75rem"></div>
+    <div id="namemap-saved-wrap"></div>
+    <div class="flex mt1" style="gap:.5rem;flex-wrap:wrap">
+      <button class="btn bp bsm" onclick="detectMismatches()">🔍 Detect Mismatches</button>
+      <button class="btn bs bsm" onclick="addManualMap()">+ Add Manually</button>
+      <button class="btn bs bsm" onclick="clearAllMaps()">Clear All Maps</button>
+    </div>
+    <div id="manual-map-row" style="display:none;margin-top:.75rem">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:.5rem;align-items:end">
+        <div><label>DraftKings Name</label><input type="text" id="map-dk-input" placeholder="e.g. R. McIlroy"></div>
+        <div class="map-arrow" style="margin-top:1.2rem">→</div>
+        <div><label>ESPN Name</label>
+          <select id="map-espn-input">
+            <option value="">-- Select ESPN name --</option>
+            ${/* populated dynamically */''}
+          </select>
+        </div>
+        <button class="btn bp bsm" onclick="saveManualMap()" style="margin-top:1.1rem">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-section" id="archive-section" style="display:none">
+    <h3 class="mb1">🏆 Archive Tournament <span class="admin-badge">ADMIN ONLY</span></h3>
+    <div class="muted sm mb1">Archive completed tournament to history.</div>
+    <button class="btn bg_ bsm" onclick="archiveTournament()">Archive Current Tournament →</button>
+  </div>
+  <div class="card mt2"><h3 class="mb1">Tiebreaker Rules</h3>
+    <ol style="padding-left:1.2rem;color:var(--txt2);font-size:.85rem;line-height:1.9">
+      <li>Most golfers who made the cut</li><li>Best (lowest) individual golfer score</li><li>Coin flip (manual)</li>
+    </ol></div>
+  <button class="btn bd bsm mt2" onclick="clearAll()">Reset All Data</button>
+</div>
+
+<script>
+const ESPN='https://site.api.espn.com/apis/site/v2/sports/golf/pga/';
+
+let S={
+  tournament:null,tournId:null,
+  participants:['Mike','Dani','Nick','Kenzy','Logan','Scott','Andrew','Jana','Chris','Bryan','Jace'],
+  draftOrder:null,picks:{},draftLog:[],draftComplete:false,currentDraftSlot:0,
+  field:[],scores:{},salaries:{},nameMap:{},history:[],
+  isAdmin:false,adminName:'Andrew',
+  fee:10,cap:50000,cutMin:4,cutOfficial:false,maxPick:2
+};
+
+function load(){try{const s=localStorage.getItem('gp_pool');if(s)S=Object.assign(S,JSON.parse(s));}catch(e){}}
+function save(){try{localStorage.setItem('gp_pool',JSON.stringify(S));}catch(e){}}
+function clearAll(){if(confirm('Reset ALL data including history?')){localStorage.removeItem('gp_pool');location.reload();}}
+
+function showTab(t,el){
+  document.querySelectorAll('.tc').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nt').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  if(el)el.classList.add('active');
+  if(t==='standings')renderStandings();
+  if(t==='field')renderFieldTab();
+  if(t==='draft')renderDraft();
+  if(t==='setup')renderSetup();
+  if(t==='history')renderHistory();
+}
+
+// ── Snake helpers ──────────────────────────────────
+function buildSnakeSeq(order){
+  const n=order.length,total=n*6,seq=[];
+  for(let i=0;i<total;i++){
+    const r=Math.floor(i/n),pos=i%n;
+    const idx=r%2===0?pos:(n-1-pos);
+    seq.push({participant:order[idx],round:r+1,overall:i+1});
+  }
+  return seq;
+}
+function getPickCounts(){
+  const c={};
+  Object.values(S.picks).forEach(arr=>(arr||[]).forEach(g=>{if(g)c[g]=(c[g]||0)+1;}));
+  return c;
+}
+function getSpend(p){return(S.picks[p]||[]).filter(x=>x).reduce((s,g)=>s+(Number(S.salaries[g])||0),0);}
+function hasSalaries(){return Object.keys(S.salaries).length>0;}
+function affordableGolfers(participant,excludeSlot=-1){
+  const cap=S.cap||50000;const pickCounts=getPickCounts();
+  const curPicks=(S.picks[participant]||[]).filter((g,i)=>g&&i!==excludeSlot);
+  const spent=curPicks.reduce((s,g)=>s+(Number(S.salaries[g])||0),0);
+  const budget=cap-spent;
+  const allNames=[...new Set([...S.field.map(f=>f.name),...Object.keys(S.salaries)])];
+  const maxPick=S.maxPick||2;
+  return allNames.filter(n=>{
+    const sal=Number(S.salaries[n])||0;
+    const cnt=pickCounts[n]||0;
+    const alreadyPickedByMe=(S.picks[participant]||[]).some((g,i)=>g===n&&i!==excludeSlot);
+    const effectiveCnt=alreadyPickedByMe?cnt-1:cnt;
+    if(effectiveCnt>=maxPick)return false;
+    if(hasSalaries()&&sal>budget)return false;
+    return true;
+  });
+}
+function hasValidPick(participant){return affordableGolfers(participant).length>0;}
+
+// ── Draft ──────────────────────────────────────────
+function renderDraft(){
+  const el=document.getElementById('draft-container');
+  if(!S.draftOrder||!S.draftOrder.length){
+    el.innerHTML=`<div class="alert-i">Go to <strong>Setup</strong>, add participants, randomize order, then click <strong>Start Draft</strong>.</div>`;return;}
+  if(S.draftComplete){renderDraftComplete(el);return;}
+  const seq=buildSnakeSeq(S.draftOrder);
+  const slot=S.currentDraftSlot||0;
+  if(slot>=seq.length){S.draftComplete=true;save();renderDraftComplete(el);return;}
+  const current=seq[slot];const p=current.participant;
+  const cap=S.cap||50000;const spend=getSpend(p);const remaining=cap-spend;
+  const pct=Math.min(100,Math.round(spend/cap*100));
+  const barCls=pct>=100?'sal-over':pct>=85?'sal-warn':'sal-ok';
+  const upcoming=seq.slice(slot+1,slot+6);
+  const pickCounts=getPickCounts();const maxPick=S.maxPick||2;const hasSal=hasSalaries();
+  const stuck=hasSal&&!hasValidPick(p);
+  const allNames=[...new Set([...S.field.map(f=>f.name),...Object.keys(S.salaries)])].sort((a,b)=>(S.salaries[b]||0)-(S.salaries[a]||0));
+  function golferOption(n,excludeSlot=-1){
+    const cnt=pickCounts[n]||0;const sal=S.salaries[n]?'$'+Number(S.salaries[n]).toLocaleString():'';
+    const sc=S.scores[n];const scStr=sc&&sc.score&&sc.score!=='E'?` ${sc.score}`:'';
+    const alreadyPickedByMe=(S.picks[p]||[]).some((g,i)=>g===n&&i!==excludeSlot);
+    const effectiveCnt=alreadyPickedByMe?cnt-1:cnt;const atMax=effectiveCnt>=maxPick;
+    const curPicks=(S.picks[p]||[]).filter((g,i)=>g&&i!==excludeSlot);
+    const altSpend=curPicks.reduce((s,g)=>s+(Number(S.salaries[g])||0),0);
+    const wouldOver=hasSal&&S.salaries[n]&&(altSpend+Number(S.salaries[n]))>cap;
+    let lbl=n+(sal?' · '+sal:'')+scStr;let dis=false;
+    if(atMax){lbl+=' (max reached)';dis=true;}else if(wouldOver){lbl+=' ⚠ over budget';dis=true;}
+    return`<option value="${n}" ${dis?'disabled':''} style="${atMax?'color:#666':wouldOver?'color:#e74c3c':''}">${lbl}</option>`;
+  }
+  const curPickArr=(S.picks[p]||[]).filter(x=>x);
+  el.innerHTML=`
+  <div class="draft-wrap">
+    <div class="draft-header">
+      <div class="draft-title">Snake Draft</div>
+      <div class="draft-round-info">Round ${current.round} · Pick ${current.overall} of ${seq.length} · ${seq.length-slot} remaining</div>
+    </div>
+    <div class="on-clock">
+      <div class="sm muted mb05">On the clock</div>
+      <div class="on-clock-name">${p}</div>
+      <div class="on-clock-meta">Pick ${(S.picks[p]||[]).filter(x=>x).length+1} of 6</div>
+    </div>
+    ${hasSal?`<div class="budget-bar-row">
+      <div class="sal-bar-wrap"><div class="sal-bar ${barCls}" style="width:${pct}%"></div></div>
+      <span class="budget-amt" style="color:${remaining<0?'var(--rl)':'var(--txt2)'}">$${spend.toLocaleString()} / $${cap.toLocaleString()}</span>
+      <span class="budget-label" style="color:${remaining<0?'var(--rl)':'var(--txt3)'}">${remaining>=0?'($'+remaining.toLocaleString()+' left)':'(OVER)'}</span>
+    </div>`:''}
+    ${stuck?`<div class="alert-r" style="margin:0 1rem .75rem">⚠ <strong>${p} is over budget</strong> — use the swap tool below to free up budget.</div>`:''}
+    ${!stuck?`<div class="pick-panel"><div class="pick-row">
+      <div><label>Select golfer for ${p}</label>
+        <select id="draft-pick-sel" style="font-size:.85rem">
+          <option value="">-- Choose a golfer --</option>
+          ${allNames.map(n=>golferOption(n)).join('')}
+        </select></div>
+      <button class="btn bp" onclick="confirmPick()" style="white-space:nowrap;margin-top:1.1rem">Confirm Pick ✓</button>
+    </div></div>`:''}
+    ${curPickArr.length>0?`
+    <div class="swap-panel" id="swap-panel" style="${stuck?'':'display:none'}">
+      <h4>${stuck?'⚡ Swap a Previous Pick':'↔ Swap a Previous Pick'}</h4>
+      <div class="sm muted mb1">${stuck?'Replace a pick with a cheaper golfer to free up budget.':'Swap one of your existing picks.'}</div>
+      <div class="swap-row" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);font-weight:500">
+        <div>Remove</div><div>Replace with</div><div></div>
+      </div>
+      ${curPickArr.map((g,i)=>{
+        const gSal=S.salaries[g]?'$'+Number(S.salaries[g]).toLocaleString():'';
+        return`<div class="swap-row" style="margin-bottom:.5rem">
+          <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:5px;padding:.35rem .6rem;font-size:.82rem">${g}${gSal?` <span style="color:var(--gold);font-family:var(--fm);font-size:.75rem">${gSal}</span>`:''}</div>
+          <select id="swap-new-${i}" style="font-size:.78rem">
+            <option value="">-- New golfer --</option>
+            ${allNames.map(n=>golferOption(n,i)).join('')}
+          </select>
+          <button class="btn bp bsm" onclick="doSwap(${i})" style="white-space:nowrap">Swap</button>
+        </div>`;
+      }).join('')}
+    </div>
+    ${!stuck?`<div style="padding:0 1rem .75rem;text-align:right"><button class="btn bs bsm" onclick="toggleSwap()">↔ Swap a previous pick</button></div>`:''}
+    `:''}
+    <div class="draft-queue">
+      <span class="sm muted" style="margin-right:.25rem">Up next:</span>
+      ${upcoming.map((u,i)=>`<span class="dq-item ${i===0?'next':''}">${u.participant} <span style="opacity:.5">R${u.round}</span></span>`).join('')}
+      ${upcoming.length===0?'<span class="sm muted">Almost done!</span>':''}
+    </div>
+  </div>
+  <div class="draft-board">${renderDraftBoard(seq,slot)}</div>
+  <button class="btn bd bsm mt1" onclick="undoLastPick()" ${slot===0?'disabled':''}>↩ Undo Last Pick</button>`;
+}
+
+function toggleSwap(){const p=document.getElementById('swap-panel');if(p)p.style.display=p.style.display==='none'?'block':'none';}
+
+function doSwap(pickIdx){
+  const seq=buildSnakeSeq(S.draftOrder);const p=seq[S.currentDraftSlot||0].participant;
+  const newSel=document.getElementById('swap-new-'+pickIdx);const newGolfer=newSel?.value;
+  if(!newGolfer){alert('Please select a replacement golfer.');return;}
+  const oldGolfer=(S.picks[p]||[])[pickIdx];
+  const curPicks=(S.picks[p]||[]).map((g,i)=>i===pickIdx?newGolfer:g).filter(x=>x);
+  const newSpend=curPicks.reduce((s,g)=>s+(Number(S.salaries[g])||0),0);
+  if(hasSalaries()&&newSpend>(S.cap||50000)){alert(`Still over budget after swap ($${newSpend.toLocaleString()}). Try a cheaper golfer.`);return;}
+  if(!S.picks[p])S.picks[p]=[];
+  S.picks[p][pickIdx]=newGolfer;
+  S.draftLog.push({slot:'swap',round:'swap',participant:p,golfer:newGolfer,swappedOut:oldGolfer,swapIdx:pickIdx});
+  save();renderDraft();
+}
+
+function confirmPick(){
+  const sel=document.getElementById('draft-pick-sel');const golfer=sel?.value;
+  if(!golfer){alert('Please select a golfer.');return;}
+  const seq=buildSnakeSeq(S.draftOrder);const slot=S.currentDraftSlot||0;const current=seq[slot];if(!current)return;
+  const p=current.participant;const spend=getSpend(p);const sal=Number(S.salaries[golfer])||0;
+  if(hasSalaries()&&(spend+sal)>(S.cap||50000)){alert(`Over budget! This pick would put ${p} $${(spend+sal-(S.cap||50000)).toLocaleString()} over the cap.`);return;}
+  if(!S.picks[p])S.picks[p]=[];
+  S.picks[p].push(golfer);
+  S.draftLog.push({slot,round:current.round,participant:p,golfer});
+  S.currentDraftSlot=(slot+1);
+  if(S.currentDraftSlot>=seq.length)S.draftComplete=true;
+  save();renderDraft();
+}
+
+function undoLastPick(){
+  if(!S.draftLog||!S.draftLog.length)return;
+  const last=S.draftLog.pop();
+  if(last.slot==='swap'){if(!S.picks[last.participant])return;S.picks[last.participant][last.swapIdx]=last.swappedOut;}
+  else{const arr=S.picks[last.participant]||[];const idx=arr.lastIndexOf(last.golfer);if(idx>-1)arr.splice(idx,1);S.picks[last.participant]=arr;S.currentDraftSlot=Math.max(0,(S.currentDraftSlot||1)-1);}
+  S.draftComplete=false;save();renderDraft();
+}
+
+function renderDraftBoard(seq,currentSlot){
+  const order=S.draftOrder;const cols=order.length;
+  const colW=`40px repeat(${cols},minmax(80px,1fr))`;
+  let html=`<div class="db-row header-row" style="grid-template-columns:${colW}"><div class="db-cell">Rd</div>
+    ${order.map(p=>`<div class="db-cell" title="${p}" style="font-size:.62rem">${p.length>6?p.substring(0,6)+'…':p}</div>`).join('')}</div>`;
+  for(let r=1;r<=6;r++){
+    const rowSeq=seq.filter(s=>s.round===r);const isCur=rowSeq.some(s=>s.overall===currentSlot+1);
+    html+=`<div class="db-row ${isCur?'current-round':''}" style="grid-template-columns:${colW}">
+      <div class="db-cell" style="color:var(--txt3);font-family:var(--fm);font-size:.72rem">R${r}<span class="snake-dir">${r%2===0?'↑':'↓'}</span></div>
+      ${order.map(p=>{const g=(S.picks[p]||[])[r-1]||null;const sal=g&&S.salaries[g]?'$'+Number(S.salaries[g]).toLocaleString():'';
+        return`<div class="db-cell" style="color:${g?'var(--txt)':'var(--txt3)'}">${g||'<span style="opacity:.2">—</span>'}${sal?`<br><span style="font-size:.62rem;color:var(--gold);font-family:var(--fm)">${sal}</span>`:''}</div>`;}).join('')}
+    </div>`;
+  }
+  return html;
+}
+
+function renderDraftComplete(el){
+  el.innerHTML=`<div class="draft-wrap">
+    <div class="draft-header"><div class="draft-title">Draft Complete 🏆</div>
+      <div class="draft-round-info">All ${(S.draftOrder||[]).length*6} picks made</div></div>
+    <div style="padding:1rem 1.25rem">
+      <div class="alert-i mb1">Draft locked. Head to <strong>Standings</strong> to track the competition.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.65rem">
+        ${(S.draftOrder||[]).map(p=>{const ps=(S.picks[p]||[]).filter(x=>x);const spend=getSpend(p);const hasSal=hasSalaries();
+          return`<div class="card" style="margin:0"><div style="font-family:var(--fd);font-size:1rem;letter-spacing:1px;margin-bottom:.5rem">${p}</div>
+            ${ps.map(g=>{const sal=S.salaries[g]?'<span style="color:var(--gold);font-size:.7rem;font-family:var(--fm)"> $'+Number(S.salaries[g]).toLocaleString()+'</span>':'';return`<div style="font-size:.8rem;padding:.15rem 0;border-bottom:1px solid rgba(45,90,61,.2)">${g}${sal}</div>`;}).join('')}
+            ${hasSal?`<div style="font-size:.75rem;color:var(--txt3);margin-top:.4rem">Total: <span style="color:var(--gold);font-family:var(--fm)">$${spend.toLocaleString()}</span></div>`:''}
+          </div>`;}).join('')}
+      </div>
+      <button class="btn bd bsm mt2" onclick="if(confirm('Reset draft?'))resetDraft()">Reset Draft</button>
+    </div>
+    <div class="draft-board" style="margin:0 1rem 1rem">${renderDraftBoard(buildSnakeSeq(S.draftOrder),9999)}</div>
+  </div>`;
+}
+
+// ── Setup ──────────────────────────────────────────
+function renderSetup(){
+  updateAdminUI();renderPTags();renderFieldTable();renderOrderList();
+  const lt=document.getElementById('tourn-locked-text');
+  if(lt)lt.innerHTML=S.tournament?`<strong style="color:var(--txt)">${S.tournament.name}</strong><br><span class="muted">${S.tournament.venue||''}${S.tournament.date?' · '+new Date(S.tournament.date).toLocaleDateString():''}</span>`:'No tournament selected. Admin must set it.';
+  if(S.isAdmin)fetchSchedule();
+}
+function randomizeDraftOrder(){
+  const arr=[...S.participants];for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  S.draftOrder=[...arr];save();renderOrderList();
+}
+function resetDraft(){
+  if(!confirm('Reset draft? All picks cleared.'))return;
+  S.picks={};S.draftLog=[];S.currentDraftSlot=0;S.draftComplete=false;save();renderOrderList();renderDraft();
+}
+function startDraft(){
+  if(!S.draftOrder||!S.draftOrder.length)randomizeDraftOrder();
+  S.draftComplete=false;if(!S.currentDraftSlot)S.currentDraftSlot=0;save();
+  document.querySelectorAll('.nt').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tc').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-draft').classList.add('active');
+  document.querySelectorAll('.nt')[2].classList.add('active');
+  renderDraft();
+}
+function renderOrderList(){
+  const el=document.getElementById('order-list');if(!el)return;
+  const order=S.draftOrder||S.participants;
+  el.innerHTML=order.map(p=>`<li><span>${p}</span></li>`).join('');
+}
+function onTournSel(){
+  const sel=document.getElementById('tourn-sel');const o=sel.selectedOptions[0];if(!o||!o.value)return;
+  S.tournId=o.value;S.tournament={name:o.dataset.name,venue:o.dataset.venue,date:o.dataset.date,status:o.dataset.status};
+  updateTournDetail(o);
+  const lt=document.getElementById('tourn-locked-text');
+  if(lt)lt.innerHTML=`<strong style="color:var(--txt)">${S.tournament.name}</strong><br><span class="muted">${S.tournament.venue||''}${S.tournament.date?' · '+new Date(S.tournament.date).toLocaleDateString():''}</span>`;
+  save();fetchField();
+}
+function updateTournDetail(o){
+  const el=document.getElementById('tourn-detail');if(!el||!o)return;
+  el.innerHTML=`📍 ${o.dataset.venue||''} &nbsp;·&nbsp; ${o.dataset.date?new Date(o.dataset.date).toLocaleDateString():''} &nbsp;·&nbsp; <span style="color:var(--gold)">${o.dataset.status||''}</span>`;
+}
+async function fetchSchedule(){
+  const sel=document.getElementById('tourn-sel');if(!sel)return;
+  sel.innerHTML='<option><span class="spinner"></span> Loading...</option>';let events=[];
+  try{
+    for(const yr of['2025','2026']){const r=await fetch(ESPN+'scoreboard?dates='+yr);const d=await r.json();events=events.concat(d.events||[]);}
+    events.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    sel.innerHTML='<option value="">-- Select tournament --</option>';
+    events.forEach(e=>{const o=document.createElement('option');o.value=e.id;o.dataset.name=e.name||'';o.dataset.venue=e.competitions?.[0]?.venue?.fullName||'';o.dataset.date=e.date||'';o.dataset.status=e.status?.type?.description||'';o.textContent=e.name+' — '+new Date(e.date).toLocaleDateString();sel.appendChild(o);});
+    if(S.tournId){sel.value=S.tournId;updateTournDetail(sel.selectedOptions[0]);}
+  }catch(err){sel.innerHTML='<option value="">-- Could not load --</option>';}
+}
+async function fetchField(){
+  if(!S.tournId)return;
+  try{
+    const r=await fetch(ESPN+'leaderboard?event='+S.tournId);const d=await r.json();
+    const players=(d.events?.[0]?.competitions?.[0]?.competitors||[]);
+    S.field=players.map(p=>({id:p.id,name:p.athlete?.displayName||'Unknown',score:p.score?.displayValue||'E',status:p.status?.type?.name||'',pos:p.status?.position?.displayName||'-'}));
+    S.scores={};
+    players.forEach(p=>{const nm=p.athlete?.displayName||'Unknown';S.scores[nm]={score:p.score?.displayValue||'E',n:s2n(p.score?.displayValue||'E'),made_cut:!(p.status?.type?.name||'').includes('CUT'),status:p.status?.type?.name||''};});
+    save();renderFieldTab();renderFieldTable();renderStandings();
+    if(document.getElementById('tab-draft').classList.contains('active'))renderDraft();
+  }catch(err){console.error('Field fetch error:',err);}
+}
+function renderFieldTab(){
+  const el=document.getElementById('field-list');if(!S.field.length){el.innerHTML='<div class="muted">No field loaded.</div>';return;}
+  const sorted=[...S.field].sort((a,b)=>s2n(a.score)-s2n(b.score));
+  el.innerHTML=`<table class="lbt"><thead><tr><th>Pos</th><th>Player</th><th>Score</th><th>Salary</th><th>Status</th></tr></thead><tbody>
+  ${sorted.map(p=>{const sc=S.scores[p.name]||{};const missed=sc.made_cut===false;const sal=S.salaries[p.name]?'$'+Number(S.salaries[p.name]).toLocaleString():'-';
+    return`<tr><td style="color:var(--txt3);font-family:var(--fm);font-size:.78rem">${p.pos}</td><td style="${missed?'text-decoration:line-through;color:var(--txt3)':''}">${p.name}</td><td>${sbadge(p.score)}</td><td style="font-family:var(--fm);color:var(--gold);font-size:.82rem">${sal}</td><td class="sm" style="color:${missed?'var(--rl)':'var(--txt3)'}">${missed?'Missed Cut':p.status||'Active'}</td></tr>`;}).join('')}</tbody></table>`;
+}
+function renderFieldTable(){
+  const body=document.getElementById('field-sal-body');const countEl=document.getElementById('field-count');if(!body)return;
+  const q=(document.getElementById('field-search')?.value||'').toLowerCase();
+  const pickCounts=getPickCounts();const maxPick=S.maxPick||2;
+  const espnNames=new Set(S.field.map(f=>f.name));
+  const allNames=new Set([...S.field.map(f=>f.name),...Object.keys(S.salaries)]);
+  let rows=[...allNames].map(nm=>{const f=S.field.find(x=>x.name===nm)||{pos:'-',score:'-'};
+    const unmatched=S.salaries[nm]&&!espnNames.has(nm);
+    return{name:nm,pos:f.pos||'-',score:f.score||'-',salary:S.salaries[nm]||0,picks:pickCounts[nm]||0,unmatched};
+  }).sort((a,b)=>b.salary-a.salary||a.name.localeCompare(b.name));
+  if(q)rows=rows.filter(r=>r.name.toLowerCase().includes(q));
+  const unmatchedCount=rows.filter(r=>r.unmatched).length;
+  if(countEl)countEl.innerHTML=rows.length+' golfers'+(unmatchedCount?` <span class="unmatched-badge">⚠ ${unmatchedCount} unmatched</span>`:'');
+  body.innerHTML=rows.map(r=>`<tr style="${r.picks>=maxPick?'opacity:.45':''}${r.unmatched?';background:rgba(192,57,43,.05)':''}">
+    <td style="color:var(--txt3);font-family:var(--fm);font-size:.75rem;width:28px">${r.pos}</td>
+    <td style="font-weight:500">${r.name}${r.picks>=maxPick?' <span style="font-size:.68rem;color:var(--rl)">(max)</span>':''}${r.unmatched?' <span style="font-size:.68rem;color:var(--rl)">⚠ no ESPN match</span>':''}</td>
+    <td>${sbadge(r.score)}</td>
+    <td style="font-family:var(--fm);color:${r.unmatched?'var(--rl)':'var(--gold)'};font-size:.82rem">${r.salary?'$'+Number(r.salary).toLocaleString():'—'}</td>
+    <td style="font-family:var(--fm);font-size:.8rem;color:${r.picks>=maxPick?'var(--rl)':'var(--txt3)'}">${r.picks}/${maxPick}</td>
+  </tr>`).join('');
+  document.getElementById('field-sal-card').style.display='block';
+}
+function importPaste(){
+  const raw=document.getElementById('sal-paste').value.trim();const msgEl=document.getElementById('import-msg');
+  if(!raw){msgEl.textContent='Nothing to import.';return;}
+  const lines=raw.split(/\r?\n/).filter(l=>l.trim());let count=0,errors=0;
+  lines.forEach(line=>{let parts=line.split('\t');if(parts.length<2)parts=line.split(',');if(parts.length<2){errors++;return;}
+    const name=parts[0].trim();const salStr=parts[parts.length-1].replace(/[\$,\s]/g,'').trim();const sal=parseInt(salStr);
+    if(!name||isNaN(sal)||sal<=0){errors++;return;}
+    // Apply existing name map on import
+    const mapped=(S.nameMap&&S.nameMap[name])||name;
+    S.salaries[mapped]=sal;count++;});
+  save();
+  const unmatched=getUnmatchedCount();
+  msgEl.innerHTML=`✓ ${count} imported${errors?' ('+errors+' skipped)':''}${unmatched?` <span style="color:var(--rl)">· ${unmatched} name${unmatched!==1?'s':''} unmatched — check Settings → Name Mapping</span>`:''}`;
+  document.getElementById('sal-paste').value='';renderFieldTable();renderFieldTab();
+  if(document.getElementById('tab-draft').classList.contains('active'))renderDraft();
+}
+function renderPTags(){const el=document.getElementById('ptags');if(!el)return;el.innerHTML=S.participants.map((p,i)=>`<span class="tag">${p}<button onclick="removeP(${i})">×</button></span>`).join('');}
+function addP(){const inp=document.getElementById('new-p');const nm=inp.value.trim();if(!nm||S.participants.includes(nm))return;S.participants.push(nm);inp.value='';save();renderPTags();renderOrderList();}
+function removeP(i){const nm=S.participants[i];S.participants.splice(i,1);delete S.picks[nm];if(S.draftOrder)S.draftOrder=S.draftOrder.filter(x=>x!==nm);save();renderPTags();renderOrderList();}
+
+// ── Standings ──────────────────────────────────────
+function s2n(s){if(!s||s==='E'||s==='-')return 0;const n=parseInt(s.replace('+',''));return isNaN(n)?0:n;}
+function sbadge(s){if(!s||s==='-')return`<span class="sc sce">-</span>`;const n=s2n(s);return`<span class="sc ${n<0?'scu':n>0?'sco':'sce'}">${s}</span>`;}
+function calcP(name){
+  const picks=(S.picks[name]||[]).filter(x=>x);let total=0,cutCount=0,best=999,spend=0;
+  const gdata=picks.map(g=>{const sc=S.scores[g]||{score:'E',n:0,made_cut:true};total+=sc.n||0;if((sc.n||0)<best)best=sc.n||0;if(sc.made_cut!==false)cutCount++;spend+=Number(S.salaries[g])||0;return{name:g,score:sc.score||'E',madeCut:sc.made_cut!==false};});
+  const elim=S.cutOfficial&&cutCount<(S.cutMin||4);
+  return{name,picks,gdata,total,cutCount,best,elim,spend,active:picks.length>0};
+}
+function renderStandings(){
+  const fee=S.fee||10;const cnt=S.participants.length;
+  document.getElementById('pot-amt').textContent='$'+(cnt*fee);
+  document.getElementById('pot-sub').textContent=`${cnt} participants · $${fee}/entry`;
+  if(!S.tournament){document.getElementById('standings-list').innerHTML='<div class="alert-i">Head to <strong>Setup</strong> then run the <strong>Draft</strong>.</div>';renderBanner();return;}
+  const results=S.participants.map(p=>calcP(p)).filter(r=>r.active);
+  if(!results.length){document.getElementById('standings-list').innerHTML='<div class="alert-i">No picks yet. Run the <strong>Draft</strong>.</div>';renderBanner();return;}
+  results.sort((a,b)=>{if(a.elim&&!b.elim)return 1;if(!a.elim&&b.elim)return-1;if(a.total!==b.total)return a.total-b.total;if(b.cutCount!==a.cutCount)return b.cutCount-a.cutCount;return a.best-b.best;});
+  const cutMin=S.cutMin||4;const hasSal=hasSalaries();
+  document.getElementById('standings-list').innerHTML=results.map((r,i)=>{
+    const rank=i+1;const warn=!S.cutOfficial&&r.cutCount<cutMin;
+    const ts=r.total===0?'E':r.total>0?'+'+r.total:String(r.total);
+    let medal='';
+    if(r.elim)medal=`<span style="color:var(--rl);font-size:1rem">✕</span>`;
+    else if(rank===1)medal=`<span class="medal m1">1</span>`;
+    else if(rank===2)medal=`<span class="medal m2">2</span>`;
+    else if(rank===3)medal=`<span class="medal m3">3</span>`;
+    else medal=`<span style="color:var(--txt3);font-family:var(--fm);font-size:.8rem;width:22px;text-align:center;display:inline-block">${rank}</span>`;
+    const budgetStr=hasSal&&r.spend?` · $${r.spend.toLocaleString()}`:'';
+    return`<div class="prow ${r.elim?'elim':''} ${rank===1&&!r.elim?'lead':''}">
+      <div class="fb"><div class="flex">${medal}<span class="pname">${r.name}</span>
+        ${r.elim?'<span class="spill" style="background:rgba(192,57,43,.2);color:var(--rl);border:1px solid var(--red);font-size:.68rem;padding:.2rem .65rem;border-radius:20px;text-transform:uppercase;letter-spacing:.4px">ELIMINATED</span>':''}
+        ${warn?`<span class="sm" style="color:var(--rl)">⚠ ${r.cutCount}/${r.picks.length} cuts</span>`:''}
+      </div><div class="flex"><span class="sm muted">${r.cutCount}/${r.picks.length} cut${budgetStr}</span>${sbadge(ts)}</div></div>
+      <div class="chips">${r.gdata.map(g=>`<span class="chip ${g.madeCut?'mc':'xc'}">${g.name} ${sbadge(g.score)}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+  renderBanner();
+}
+function renderBanner(){
+  const el=document.getElementById('tbanner');if(!S.tournament){el.innerHTML='';return;}
+  const t=S.tournament;const sc=t.status==='In Progress'?'slive':t.status==='Final'?'sfin':'spre';
+  el.innerHTML=`<div class="tbanner"><div><div class="tname">${t.name||'Tournament'}</div><div class="tmeta">${t.venue||''}${t.date?' · '+new Date(t.date).toLocaleDateString():''}</div></div>
+    <div class="flex" style="flex-wrap:wrap;gap:.5rem"><span class="spill ${sc}">${t.status||'Upcoming'}</span><button class="btn bs bsm" onclick="fetchField()">↻ Refresh Scores</button></div></div>`;
+}
+
+// ── History ────────────────────────────────────────
+function archiveTournament(){
+  if(!S.tournament){alert('No active tournament.');return;}if(!confirm('Archive current tournament to history?'))return;
+  const results=S.participants.map(p=>calcP(p)).filter(r=>r.active);
+  results.sort((a,b)=>{if(a.elim&&!b.elim)return 1;if(!a.elim&&b.elim)return-1;if(a.total!==b.total)return a.total-b.total;if(b.cutCount!==a.cutCount)return b.cutCount-a.cutCount;return a.best-b.best;});
+  const pot=S.participants.length*(S.fee||10);const winner=results.find(r=>!r.elim);
+  S.history.unshift({id:Date.now(),tournament:S.tournament,date:new Date().toISOString(),pot,winner:winner?.name||'—',winnerScore:winner?winner.total:null,participants:S.participants.length,draftOrder:S.draftOrder,results:results.map(r=>({name:r.name,total:r.total,cutCount:r.cutCount,elim:r.elim,picks:r.picks,spend:r.spend}))});
+  S.tournament=null;S.tournId=null;S.picks={};S.draftLog=[];S.currentDraftSlot=0;S.draftComplete=false;S.draftOrder=null;S.scores={};S.field=[];S.salaries={};S.cutOfficial=false;
+  save();alert('Tournament archived!');
+  document.querySelectorAll('.nt').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tc').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-history').classList.add('active');
+  document.querySelectorAll('.nt')[4].classList.add('active');
+  renderHistory();
+}
+function renderHistory(){
+  const el=document.getElementById('history-list');document.getElementById('hist-count').textContent=`${S.history.length} tournament${S.history.length!==1?'s':''}`;
+  if(!S.history.length){el.innerHTML='<div class="muted">No past tournaments yet.</div>';return;}
+  el.innerHTML=S.history.map((h,hi)=>`<div class="hist-card">
+    <div class="hist-head" onclick="toggleHist(${hi})"><div>
+      <div style="font-family:var(--fd);font-size:1.05rem;letter-spacing:1px;color:var(--gold)">${h.tournament?.name||'Tournament'}</div>
+      <div class="sm muted">${h.tournament?.venue||''} · ${h.date?new Date(h.date).toLocaleDateString():''}</div></div>
+      <div class="flex"><div style="text-align:right"><div class="sm" style="color:var(--gold);font-weight:600">🏆 ${h.winner}</div>
+        <div class="sm muted">Pot: $${h.pot} · ${h.participants} players</div></div>
+        <span style="color:var(--txt3);font-size:1.2rem" id="harrow-${hi}">▸</span></div></div>
+    <div class="hist-body" id="hbody-${hi}">
+      <table class="lbt"><thead><tr><th>Rank</th><th>Participant</th><th>Score</th><th>Cuts</th><th>Spent</th></tr></thead>
+      <tbody>${(h.results||[]).map((r,i)=>{const ts=r.total===0?'E':r.total>0?'+'+r.total:String(r.total);
+        return`<tr><td style="color:var(--txt3);font-family:var(--fm);font-size:.78rem">${r.elim?'—':i+1}</td><td style="font-weight:500">${r.name}${i===0&&!r.elim?' 🏆':''}</td><td>${sbadge(ts)}</td><td class="sm muted">${r.cutCount}/${r.picks?.length||6}</td><td class="sm" style="font-family:var(--fm);color:var(--txt3)">${r.spend?'$'+r.spend.toLocaleString():'-'}</td></tr>`;}).join('')}</tbody></table>
+      ${h.draftOrder?`<div class="sm muted mt1">Draft order: ${h.draftOrder.join(' → ')}</div>`:''}
+      <button class="btn bd bsm mt1" onclick="deleteHistory(${hi})">Delete Record</button>
+    </div></div>`).join('');
+}
+function toggleHist(i){document.getElementById('hbody-'+i).classList.toggle('open');document.getElementById('harrow-'+i).textContent=document.getElementById('hbody-'+i).classList.contains('open')?'▾':'▸';}
+function deleteHistory(i){if(!confirm('Delete this record?'))return;S.history.splice(i,1);save();renderHistory();}
+
+// ── Name Mapping ───────────────────────────────────
+// S.nameMap = { "R. McIlroy": "Rory McIlroy", ... }
+// resolvedName(n) returns the ESPN name for any DK name
+
+function resolvedName(n){return(S.nameMap&&S.nameMap[n])||n;}
+
+// Apply nameMap to salaries so scores link correctly
+// salaries are always stored under the ESPN name after mapping
+function applyNameMapToSalaries(){
+  if(!S.nameMap)return;
+  Object.entries(S.nameMap).forEach(([dk,espn])=>{
+    if(S.salaries[dk]!==undefined&&dk!==espn){
+      S.salaries[espn]=S.salaries[dk];
+      delete S.salaries[dk];
+    }
+  });
+}
+
+// Fuzzy match: find closest ESPN name for a DK name
+function fuzzyMatch(dkName, espnNames){
+  const dk=dkName.toLowerCase().replace(/[^a-z]/g,'');
+  let best=null,bestScore=0;
+  espnNames.forEach(espn=>{
+    const e=espn.toLowerCase().replace(/[^a-z]/g,'');
+    // Score: shared characters / max length
+    const longer=Math.max(dk.length,e.length);
+    if(!longer)return;
+    // Check if last name matches (strong signal)
+    const dkLast=dk.split('').slice(-6).join('');
+    const eLast=e.split('').slice(-6).join('');
+    let score=0;
+    // Exact last-name match boost
+    if(dkLast===eLast)score+=0.5;
+    // Character overlap
+    const dkSet=new Set(dk);const eSet=new Set(e);
+    let shared=0;dkSet.forEach(c=>{if(eSet.has(c))shared++;});
+    score+=shared/longer*0.5;
+    if(score>bestScore){bestScore=score;best=espn;}
+  });
+  return bestScore>0.55?{name:best,score:bestScore}:null;
+}
+
+function detectMismatches(){
+  if(!S.field.length){alert('Load the tournament field first (Setup tab).');return;}
+  const espnNames=S.field.map(f=>f.name);
+  const unmatchedWrap=document.getElementById('namemap-unmatched-wrap');
+  // Find DK salary names not in ESPN field
+  const unmatched=Object.keys(S.salaries).filter(dk=>!espnNames.includes(dk));
+  if(!unmatched.length){
+    unmatchedWrap.innerHTML='<div class="alert-i" style="margin:0">✓ All salary names match ESPN names perfectly!</div>';
+    renderSavedMaps();return;
+  }
+  // Build suggestions
+  const rows=unmatched.map(dk=>{
+    const suggestion=fuzzyMatch(dk,espnNames);
+    return{dk,suggestion};
+  });
+  unmatchedWrap.innerHTML=`
+    <div class="alert-w" style="margin-bottom:.65rem">⚠ ${unmatched.length} DraftKings name${unmatched.length!==1?'s':''} don't match ESPN. Map them below:</div>
+    <div style="border:1px solid var(--bdr);border-radius:6px;overflow:hidden">
+      <div class="map-row" style="background:var(--bg3);font-size:.68rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);font-weight:500;padding:.35rem .6rem">
+        <div>DraftKings Name</div><div></div><div>Map to ESPN Name</div><div></div>
+      </div>
+      ${rows.map(({dk,suggestion})=>`
+      <div class="map-row" style="padding:.4rem .6rem">
+        <div class="map-dk">${dk}</div>
+        <div class="map-arrow">→</div>
+        <div>
+          <select id="mapsel-${encodeURIComponent(dk)}" style="font-size:.78rem">
+            <option value="">-- Select ESPN name --</option>
+            ${espnNames.sort().map(n=>`<option value="${n}" ${suggestion&&suggestion.name===n?'selected':''}>${n}</option>`).join('')}
+          </select>
+        </div>
+        <button class="btn bp bsm" onclick="confirmMap('${encodeURIComponent(dk)}')" style="white-space:nowrap">Map</button>
+      </div>`).join('')}
+    </div>`;
+  renderSavedMaps();
+}
+
+function confirmMap(encodedDk){
+  const dk=decodeURIComponent(encodedDk);
+  const sel=document.getElementById('mapsel-'+encodedDk);
+  const espn=sel?.value;
+  if(!espn){alert('Please select an ESPN name.');return;}
+  if(!S.nameMap)S.nameMap={};
+  S.nameMap[dk]=espn;
+  // Move salary to ESPN name
+  if(S.salaries[dk]!==undefined){
+    S.salaries[espn]=S.salaries[dk];
+    delete S.salaries[dk];
+  }
+  save();
+  detectMismatches(); // re-run to refresh the list
+  renderFieldTable();
+  renderFieldTab();
+}
+
+function addManualMap(){
+  const row=document.getElementById('manual-map-row');
+  row.style.display=row.style.display==='none'?'block':'none';
+  // Populate ESPN dropdown
+  const sel=document.getElementById('map-espn-input');
+  sel.innerHTML='<option value="">-- Select ESPN name --</option>'+
+    S.field.map(f=>f.name).sort().map(n=>`<option value="${n}">${n}</option>`).join('');
+}
+
+function saveManualMap(){
+  const dk=document.getElementById('map-dk-input').value.trim();
+  const espn=document.getElementById('map-espn-input').value;
+  if(!dk||!espn){alert('Please fill in both fields.');return;}
+  if(!S.nameMap)S.nameMap={};
+  S.nameMap[dk]=espn;
+  if(S.salaries[dk]!==undefined){S.salaries[espn]=S.salaries[dk];delete S.salaries[dk];}
+  document.getElementById('map-dk-input').value='';
+  document.getElementById('manual-map-row').style.display='none';
+  save();renderSavedMaps();renderFieldTable();renderFieldTab();
+}
+
+function clearAllMaps(){
+  if(!confirm('Clear all name mappings?'))return;
+  S.nameMap={};save();renderSavedMaps();
+  document.getElementById('namemap-unmatched-wrap').innerHTML='';
+}
+
+function removeMap(dk){
+  if(!S.nameMap)return;
+  delete S.nameMap[dk];save();renderSavedMaps();
+}
+
+function renderSavedMaps(){
+  const el=document.getElementById('namemap-saved-wrap');if(!el)return;
+  const maps=Object.entries(S.nameMap||{});
+  if(!maps.length){el.innerHTML='';return;}
+  el.innerHTML=`<div class="sm muted mb05" style="margin-top:.65rem">Active mappings (${maps.length}):</div>
+    <div style="border:1px solid var(--bdr);border-radius:6px;overflow:hidden">
+      ${maps.map(([dk,espn])=>`<div class="map-row" style="padding:.35rem .6rem">
+        <div class="map-dk">${dk}</div>
+        <div class="map-arrow">→</div>
+        <div class="map-espn">${espn}</div>
+        <button class="btn bd bsm" onclick="removeMap('${dk.replace(/'/g,"\\'")}')">✕</button>
+      </div>`).join('')}
+    </div>`;
+}
+
+// Also show unmatched count badge on field table
+function getUnmatchedCount(){
+  if(!S.field.length||!Object.keys(S.salaries).length)return 0;
+  const espnNames=new Set(S.field.map(f=>f.name));
+  return Object.keys(S.salaries).filter(dk=>!espnNames.has(dk)).length;
+}
+
+// ── Admin / Settings ───────────────────────────────
+function updateAdminUI(){
+  const a=S.isAdmin;
+  document.getElementById('admin-nav-badge').style.display=a?'inline':'none';
+  document.getElementById('tourn-admin-controls').style.display=a?'block':'none';
+  document.getElementById('tourn-locked-view').style.display=a?'none':'block';
+  document.getElementById('tourn-admin-badge').style.display=a?'inline':'none';
+  const sps=document.getElementById('sal-paste-section');if(sps)sps.style.display=a?'block':'none';
+  const arc=document.getElementById('archive-section');if(arc)arc.style.display=a?'block':'none';
+  const nms=document.getElementById('namemap-section');if(nms)nms.style.display=a?'block':'none';
+  if(a)renderSavedMaps();
+}
+function toggleAdmin(){S.isAdmin=document.getElementById('admin-toggle').checked;save();updateAdminUI();if(S.isAdmin&&document.getElementById('tab-setup').classList.contains('active'))renderSetup();}
+function saveSettings(){
+  S.fee=parseInt(document.getElementById('fee-input').value)||10;
+  S.cap=parseInt(document.getElementById('cap-input').value)||50000;
+  S.cutMin=parseInt(document.getElementById('cutmin-input').value)||4;
+  S.maxPick=parseInt(document.getElementById('maxpick-input').value)||2;
+  S.cutOfficial=document.getElementById('cut-official').checked;
+  S.adminName=document.getElementById('admin-name').value||'Andrew';
+  save();
+}
+
+// ── Boot ───────────────────────────────────────────
+load();renderBanner();renderStandings();
+setTimeout(()=>{
+  const fi=document.getElementById('fee-input');if(fi)fi.value=S.fee||10;
+  const ci=document.getElementById('cap-input');if(ci)ci.value=S.cap||50000;
+  const cmi=document.getElementById('cutmin-input');if(cmi)cmi.value=S.cutMin||4;
+  const mpi=document.getElementById('maxpick-input');if(mpi)mpi.value=S.maxPick||2;
+  const co=document.getElementById('cut-official');if(co)co.checked=!!S.cutOfficial;
+  const at=document.getElementById('admin-toggle');if(at)at.checked=!!S.isAdmin;
+  const an=document.getElementById('admin-name');if(an)an.value=S.adminName||'Andrew';
+  updateAdminUI();
+  if(S.field&&S.field.length){renderFieldTab();renderFieldTable();}
+},80);
+</script>
+</body>
+</html>
