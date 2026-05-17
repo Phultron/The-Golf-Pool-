@@ -598,19 +598,30 @@ async function fetchField(){
       S.tournament={name:ev.name||S.tournament?.name||'',venue:ev.competitions?.[0]?.venue?.fullName||S.tournament?.venue||'',date:ev.date||S.tournament?.date||'',status:ev.status?.type?.description||''};
     }
     const players=ev.competitions?.[0]?.competitors||[];
-    S.field=players.map((p,i)=>({
-      id:p.id,
-      name:p.athlete?.displayName||'Unknown',
-      score:p.score?.displayValue||'E',
-      status:p.status?.type?.name||'',
-      pos:p.status?.position?.displayName||String(p.order||i+1)
-    }));
+    S.field=players.map((p,i)=>{
+      // In scoreboard API, score can be a string ("-6") or object with displayValue
+      const rawScore=typeof p.score==='string'?p.score:(p.score?.displayValue||p.score?.value?.toString()||'E');
+      // Format as display string
+      let scoreStr=rawScore;
+      if(scoreStr==='0')scoreStr='E';
+      else if(scoreStr&&!isNaN(Number(scoreStr))&&Number(scoreStr)>0)scoreStr='+'+scoreStr;
+      return{
+        id:p.id,
+        name:p.athlete?.displayName||'Unknown',
+        score:scoreStr||'E',
+        status:p.status?.type?.name||'',
+        pos:p.status?.position?.displayName||String(p.order||i+1)
+      };
+    });
     S.scores={};
-    players.forEach(p=>{
+    players.forEach((p,i)=>{
       const nm=p.athlete?.displayName||'Unknown';
       const isCut=(p.status?.type?.name||'').toUpperCase().includes('CUT');
-      S.scores[nm]={score:p.score?.displayValue||'E',n:s2n(p.score?.displayValue||'E'),made_cut:!isCut,status:p.status?.type?.name||''};
+      const f=S.field[i];
+      S.scores[nm]={score:f.score,n:s2n(f.score),made_cut:!isCut,status:p.status?.type?.name||''};
     });
+    // Update field scores from parsed S.scores
+    S.field=S.field.map(f=>({...f,score:S.scores[f.name]?.score||f.score}));
     save();renderFieldTab();renderFieldTable();renderStandings();
     renderBanner();
     if(document.getElementById('tab-draft').classList.contains('active'))renderDraft();
