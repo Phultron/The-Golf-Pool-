@@ -679,45 +679,58 @@ async function fetchSchedule(){
   }catch(err){sel.innerHTML='<option value="">-- Could not load --</option>';console.error(err);}
 }
 async function fetchField(){
-  // Always fetch from scoreboard — it contains the live competitors for the current event
   try{
-    const r=await fetch(ESPN);const d=await r.json();
-    // Find matching event or use first current event
-    const events=d.events||[];
-    const ev=S.tournId?events.find(e=>e.id===S.tournId)||events[0]:events[0];
-    if(!ev){console.warn('No event found in scoreboard');return;}
-    // Update tournament info from live data
-    if(ev){
-      S.tournId=ev.id;
-      S.tournament={name:ev.name||S.tournament?.name||'',venue:ev.competitions?.[0]?.venue?.fullName||S.tournament?.venue||'',date:ev.date||S.tournament?.date||'',status:ev.status?.type?.description||''};
+    // First try fetching the specific event directly if we have an ID
+    let players=[];
+    let evInfo=null;
+
+    if(S.tournId){
+      // Try the specific event endpoint first
+      try{
+        const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard?event='+S.tournId);
+        const d=await r.json();
+        const ev=d.events&&d.events[0];
+        if(ev&&ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors&&ev.competitions[0].competitors.length>0){
+          players=ev.competitions[0].competitors;
+          evInfo={name:ev.name||'',venue:(ev.competitions[0].venue&&ev.competitions[0].venue.fullName)||'',date:ev.date||'',status:(ev.status&&ev.status.type&&ev.status.type.description)||''};
+        }
+      }catch(e){console.log('Specific event fetch failed, falling back to scoreboard');}
     }
-    const players=ev.competitions?.[0]?.competitors||[];
-    S.field=players.map((p,i)=>{
-      // In scoreboard API, score can be a string ("-6") or object with displayValue
-      const rawScore=typeof p.score==='string'?p.score:(p.score?.displayValue||p.score?.value?.toString()||'E');
-      // Format as display string
-      let scoreStr=rawScore;
+
+    // Fall back to scoreboard and find the matching event
+    if(players.length===0){
+      const r=await fetch(ESPN);const d=await r.json();
+      const events=d.events||[];
+      // Try to find the selected tournament in the current events
+      let ev=S.tournId?events.find(function(e){return e.id===S.tournId;}):null;
+      // If not found (e.g. it's already finished and dropped off), just use first event
+      if(!ev)ev=events[0];
+      if(!ev){console.warn('No event found');return;}
+      players=(ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors)||[];
+      evInfo={name:ev.name||'',venue:(ev.competitions&&ev.competitions[0]&&ev.competitions[0].venue&&ev.competitions[0].venue.fullName)||'',date:ev.date||'',status:(ev.status&&ev.status.type&&ev.status.type.description)||''};
+      S.tournId=ev.id;
+    }
+
+    // Update tournament info
+    if(evInfo){
+      S.tournament=Object.assign(S.tournament||{},evInfo);
+    }
+
+    S.field=players.map(function(p,i){
+      var rawScore=typeof p.score==='string'?p.score:(p.score&&(p.score.displayValue||String(p.score.value))||'E');
+      var scoreStr=rawScore;
       if(scoreStr==='0')scoreStr='E';
       else if(scoreStr&&!isNaN(Number(scoreStr))&&Number(scoreStr)>0)scoreStr='+'+scoreStr;
-      return{
-        id:p.id,
-        name:p.athlete?.displayName||'Unknown',
-        score:scoreStr||'E',
-        status:p.status?.type?.name||'',
-        pos:p.status?.position?.displayName||String(p.order||i+1)
-      };
+      return{id:p.id,name:(p.athlete&&p.athlete.displayName)||'Unknown',score:scoreStr||'E',status:(p.status&&p.status.type&&p.status.type.name)||'',pos:(p.status&&p.status.position&&p.status.position.displayName)||String(p.order||i+1)};
     });
+
     S.scores={};
-    players.forEach((p,i)=>{
-      const nm=p.athlete?.displayName||'Unknown';
-      const isCut=(p.status?.type?.name||'').toUpperCase().includes('CUT');
-      const f=S.field[i];
-      S.scores[nm]={score:f.score,n:s2n(f.score),made_cut:!isCut,status:p.status?.type?.name||''};
+    S.field.forEach(function(f){
+      var isCut=f.status.toUpperCase().includes('CUT');
+      S.scores[f.name]={score:f.score,n:s2n(f.score),made_cut:!isCut,status:f.status};
     });
-    // Update field scores from parsed S.scores
-    S.field=S.field.map(f=>({...f,score:S.scores[f.name]?.score||f.score}));
-    save();renderFieldTab();renderFieldTable();renderStandings();
-    renderBanner();
+
+    save();renderFieldTab();renderFieldTable();renderStandings();renderBanner();
     if(document.getElementById('tab-draft').classList.contains('active'))renderDraft();
   }catch(err){console.error('Field fetch error:',err);}
 }
