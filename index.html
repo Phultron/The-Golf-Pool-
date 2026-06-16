@@ -149,6 +149,7 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
   <button class="nt" onclick="showTab('setup',this)">Setup</button>
   <button class="nt" onclick="showTab('history',this)">History</button>
   <button class="nt" onclick="showTab('settings',this)">Settings<span class="admin-badge" id="admin-nav-badge" style="display:none">ADMIN</span></button>
+  <span id="sync-status" style="font-size:.72rem;margin-left:.5rem;color:var(--txt3)"></span>
 </nav>
 
 <!-- STANDINGS -->
@@ -311,9 +312,96 @@ let S={
   fee:10,cap:50000,cutMin:4,cutOfficial:false,maxPick:2
 };
 
-function load(){try{const s=localStorage.getItem('gp_pool');if(s)S=Object.assign(S,JSON.parse(s));}catch(e){}}
-function save(){try{localStorage.setItem('gp_pool',JSON.stringify(S));}catch(e){}}
-function clearAll(){if(confirm('Reset ALL data including history?')){localStorage.removeItem('gp_pool');location.reload();}}
+const SUPA_URL='https://qzmiyusbicdwfgefbvxu.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bWl5dXNiaWNkd2ZnZWZidnh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2Mzc5NjcsImV4cCI6MjA5NzIxMzk2N30.6f1_-gPc-4LWwnVYnSd1gqxBHpLDm8VDnQV9FwfL4Kc';
+
+// ── Supabase sync ──────────────────────────────────
+// We store the entire S object (minus scores/field which come from ESPN live)
+// as a single JSON blob in pool_state table, row id='main'
+
+let _saveTimer=null;
+let _syncStatus=''; // 'saving','saved','error'
+
+function setSyncStatus(s){
+  _syncStatus=s;
+  const el=document.getElementById('sync-status');
+  if(!el)return;
+  const map={saving:'⟳ Saving…',saved:'✓ Synced',error:'⚠ Sync error'};
+  const col={saving:'var(--txt3)',saved:'var(--gl)',error:'var(--rl)'};
+  el.textContent=map[s]||'';
+  el.style.color=col[s]||'var(--txt3)';
+}
+
+async function supaLoad(){
+  try{
+    const r=await fetch(SUPA_URL+'/rest/v1/pool_state?id=eq.main&select=data',{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    const rows=await r.json();
+    if(rows&&rows[0]&&rows[0].data&&Object.keys(rows[0].data).length){
+      // Merge remote into S, keeping local isAdmin preference
+      const remote=rows[0].data;
+      const wasAdmin=S.isAdmin;
+      S=Object.assign(S,remote);
+      S.isAdmin=wasAdmin; // isAdmin is per-device, not shared
+      // scores & field are fetched live, don't restore stale ones
+      S.scores={};S.field=[];
+    }
+  }catch(e){console.error('Supabase load error',e);}
+}
+
+async function supaSave(){
+  setSyncStatus('saving');
+  // Don't persist live ESPN data — always re-fetch on load
+  const toSave=Object.assign({},S);
+  delete toSave.scores;delete toSave.field;delete toSave.isAdmin;
+  try{
+    const r=await fetch(SUPA_URL+'/rest/v1/pool_state?id=eq.main',{
+      method:'PATCH',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({data:toSave,updated_at:new Date().toISOString()})
+    });
+    if(r.ok){setSyncStatus('saved');}
+    else{setSyncStatus('error');console.error('Supabase save error',r.status);}
+  }catch(e){setSyncStatus('error');console.error('Supabase save error',e);}
+}
+
+// Debounced save — batches rapid changes into one write
+function save(){
+  // Always keep localStorage as fallback
+  try{localStorage.setItem('gp_pool',JSON.stringify(S));}catch(e){}
+  if(_saveTimer)clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(()=>supaSave(),800);
+}
+
+function load(){
+  // Load from localStorage as immediate fallback while Supabase loads
+  try{const s=localStorage.getItem('gp_pool');if(s)S=Object.assign(S,JSON.parse(s));}catch(e){}
+}
+
+async function clearAll(){
+  if(!confirm('Reset ALL data including history for EVERYONE?'))return;
+  S=Object.assign(S,{
+    tournament:null,tournId:null,
+    participants:['Mike','Dani','Nick','Kenzy','Logan','Scott','Andrew','Jana','Chris','Bryan','Jace'],
+    draftOrder:null,picks:{},draftLog:[],draftComplete:false,currentDraftSlot:0,
+    field:[],scores:{},salaries:{},nameMap:{},history:[],
+    fee:10,cap:50000,cutMin:4,cutOfficial:false,maxPick:2
+  });
+  localStorage.removeItem('gp_pool');
+  await supaSave();
+  location.reload();
+}
+
+// Poll for remote changes every 30s (so non-admin devices see updates)
+function startSync(){
+  setInterval(async()=>{
+    if(document.hidden)return; // don't sync if tab not visible
+    await supaLoad();
+    renderStandings();renderBanner();
+    if(S.field&&S.field.length){renderFieldTab();renderFieldTable();}
+  },30000);
+}
 
 function showTab(t,el){
   document.querySelectorAll('.tc').forEach(x=>x.classList.remove('active'));
@@ -973,8 +1061,14 @@ function saveSettings(){
 }
 
 // ── Boot ───────────────────────────────────────────
-load();renderBanner();renderStandings();
-setTimeout(()=>{
+(async()=>{
+  // Show loading state
+  document.getElementById('standings-list').innerHTML='<div class="muted"><span class="spinner"></span> Loading shared data…</div>';
+  // Load localStorage immediately for fast render
+  load();
+  // Then load from Supabase (authoritative)
+  await supaLoad();
+  // Restore settings UI
   const fi=document.getElementById('fee-input');if(fi)fi.value=S.fee||10;
   const ci=document.getElementById('cap-input');if(ci)ci.value=S.cap||50000;
   const cmi=document.getElementById('cutmin-input');if(cmi)cmi.value=S.cutMin||4;
@@ -983,8 +1077,13 @@ setTimeout(()=>{
   const at=document.getElementById('admin-toggle');if(at)at.checked=!!S.isAdmin;
   const an=document.getElementById('admin-name');if(an)an.value=S.adminName||'Andrew';
   updateAdminUI();
-  if(S.field&&S.field.length){renderFieldTab();renderFieldTable();}
-},80);
+  renderBanner();
+  renderStandings();
+  // Fetch live scores
+  if(S.tournId)fetchField();
+  // Start background sync polling
+  startSync();
+})();
 </script>
 </body>
 </html>
