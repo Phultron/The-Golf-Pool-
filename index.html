@@ -242,9 +242,30 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
   <h2 class="mb1">Settings</h2>
   <div class="card">
     <h3 class="mb1">Admin Mode</h3>
-    <div class="muted sm mb1">Admin controls tournament selection and salary entry.</div>
-    <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;margin:0"><input type="checkbox" id="admin-toggle" onchange="toggleAdmin()"> I am the admin</label>
-    <div class="mt1"><label>Admin Name</label><input type="text" id="admin-name" placeholder="e.g. Andrew" onchange="saveSettings()" style="width:180px"></div>
+    <div class="muted sm mb1">Enter the admin password to unlock tournament and salary controls.</div>
+    <!-- Login form (shown when not admin) -->
+    <div id="admin-login-wrap">
+      <div style="display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:end;max-width:380px">
+        <div>
+          <label>Admin Password</label>
+          <input type="password" id="admin-pw-input" placeholder="Enter password…" onkeydown="if(event.key==='Enter')adminLogin()">
+        </div>
+        <button class="btn bp" onclick="adminLogin()" style="margin-bottom:0">Unlock</button>
+      </div>
+      <div id="admin-login-error" style="color:var(--rl);font-size:.8rem;margin-top:.4rem;display:none">Incorrect password.</div>
+    </div>
+    <!-- Logged-in state (shown when admin) -->
+    <div id="admin-loggedin-wrap" style="display:none">
+      <div class="flex" style="gap:.75rem;flex-wrap:wrap">
+        <span style="color:var(--gl);font-size:.88rem">🔓 Admin mode active</span>
+        <button class="btn bs bsm" onclick="adminLogout()">Log out</button>
+      </div>
+      <div class="mt1 g2" style="max-width:500px">
+        <div><label>Change Password</label><input type="password" id="admin-pw-new" placeholder="New password…"></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn bs bsm" onclick="changeAdminPassword()" style="white-space:nowrap">Save Password</button></div>
+      </div>
+      <div id="admin-pw-msg" class="sm muted mt1" style="display:none"></div>
+    </div>
   </div>
   <div class="card"><h3 class="mb1">Budget Cap</h3>
     <div class="flex"><label style="white-space:nowrap;margin:0;color:var(--txt)">DraftKings Cap ($):</label>
@@ -1051,9 +1072,61 @@ function getUnmatchedCount(){
 }
 
 // ── Admin / Settings ───────────────────────────────
+// Password is stored as a simple hash in S.adminPwHash (shared via Supabase)
+// Default password: "thepool" — admin can change it after first login
+
+function simpleHash(str){
+  // djb2 hash — good enough for a family golf pool
+  var hash=5381;
+  for(var i=0;i<str.length;i++){hash=((hash<<5)+hash)+str.charCodeAt(i);hash=hash&hash;}
+  return String(hash>>>0);
+}
+
+const DEFAULT_PW_HASH=simpleHash('thepool');
+
+function adminLogin(){
+  const pw=document.getElementById('admin-pw-input').value;
+  const errEl=document.getElementById('admin-login-error');
+  if(!pw){errEl.style.display='block';errEl.textContent='Please enter a password.';return;}
+  const expected=S.adminPwHash||DEFAULT_PW_HASH;
+  if(simpleHash(pw)===expected){
+    S.isAdmin=true;
+    document.getElementById('admin-pw-input').value='';
+    errEl.style.display='none';
+    updateAdminUI();
+    // Save isAdmin to localStorage only (not Supabase — it's per-device)
+    try{localStorage.setItem('gp_admin',JSON.stringify({isAdmin:true,expires:Date.now()+8*3600*1000}));}catch(e){}
+  } else {
+    errEl.style.display='block';errEl.textContent='Incorrect password.';
+    document.getElementById('admin-pw-input').value='';
+  }
+}
+
+function adminLogout(){
+  S.isAdmin=false;
+  try{localStorage.removeItem('gp_admin');}catch(e){}
+  updateAdminUI();
+}
+
+function changeAdminPassword(){
+  const newPw=document.getElementById('admin-pw-new').value.trim();
+  const msgEl=document.getElementById('admin-pw-msg');
+  if(!newPw||newPw.length<4){msgEl.style.display='block';msgEl.textContent='Password must be at least 4 characters.';msgEl.style.color='var(--rl)';return;}
+  S.adminPwHash=simpleHash(newPw);
+  document.getElementById('admin-pw-new').value='';
+  msgEl.style.display='block';msgEl.textContent='✓ Password updated and saved.';msgEl.style.color='var(--gl)';
+  save(); // saves hash to Supabase so it persists
+  setTimeout(()=>{msgEl.style.display='none';},3000);
+}
+
 function updateAdminUI(){
   const a=S.isAdmin;
+  // Nav badge
   document.getElementById('admin-nav-badge').style.display=a?'inline':'none';
+  // Login / loggedin panels
+  const lw=document.getElementById('admin-login-wrap');if(lw)lw.style.display=a?'none':'block';
+  const aw=document.getElementById('admin-loggedin-wrap');if(aw)aw.style.display=a?'block':'none';
+  // Setup tab admin controls
   document.getElementById('tourn-admin-controls').style.display=a?'block':'none';
   document.getElementById('tourn-locked-view').style.display=a?'none':'block';
   document.getElementById('tourn-admin-badge').style.display=a?'inline':'none';
@@ -1062,14 +1135,13 @@ function updateAdminUI(){
   const nms=document.getElementById('namemap-section');if(nms)nms.style.display=a?'block':'none';
   if(a)renderSavedMaps();
 }
-function toggleAdmin(){S.isAdmin=document.getElementById('admin-toggle').checked;save();updateAdminUI();if(S.isAdmin&&document.getElementById('tab-setup').classList.contains('active'))renderSetup();}
+
 function saveSettings(){
   S.fee=parseInt(document.getElementById('fee-input').value)||10;
   S.cap=parseInt(document.getElementById('cap-input').value)||50000;
   S.cutMin=parseInt(document.getElementById('cutmin-input').value)||4;
   S.maxPick=parseInt(document.getElementById('maxpick-input').value)||2;
   S.cutOfficial=document.getElementById('cut-official').checked;
-  S.adminName=document.getElementById('admin-name').value||'Andrew';
   save();
 }
 
@@ -1087,8 +1159,11 @@ function saveSettings(){
   const cmi=document.getElementById('cutmin-input');if(cmi)cmi.value=S.cutMin||4;
   const mpi=document.getElementById('maxpick-input');if(mpi)mpi.value=S.maxPick||2;
   const co=document.getElementById('cut-official');if(co)co.checked=!!S.cutOfficial;
-  const at=document.getElementById('admin-toggle');if(at)at.checked=!!S.isAdmin;
-  const an=document.getElementById('admin-name');if(an)an.value=S.adminName||'Andrew';
+  // Restore admin session if still valid (8hr window)
+  try{
+    const adm=JSON.parse(localStorage.getItem('gp_admin')||'{}');
+    if(adm.isAdmin&&adm.expires&&Date.now()<adm.expires)S.isAdmin=true;
+  }catch(e){}
   updateAdminUI();
   renderBanner();
   renderStandings();
