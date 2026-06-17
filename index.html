@@ -220,13 +220,32 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
   <div class="card">
     <div class="fb mb1">
       <h3>Draft Order</h3>
-      <div class="flex" style="gap:.5rem">
-        <button class="btn bp bsm" onclick="randomizeDraftOrder()">🔀 Randomize</button>
-        <button class="btn bs bsm" onclick="resetDraft()">Reset Draft</button>
-      </div>
+      <button class="btn bs bsm" onclick="resetDraft()">Reset Draft</button>
     </div>
-    <div class="muted sm mb1">Round 1 order shown. Snake reverses each round.</div>
-    <ol class="order-list" id="order-list"></ol>
+    <!-- Radio toggle -->
+    <div class="flex mb1" style="gap:1.5rem">
+      <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;margin:0;text-transform:none;letter-spacing:0;font-size:.88rem;color:var(--txt)">
+        <input type="radio" name="draft-mode" value="random" id="mode-random" onchange="onDraftModeChange()" style="width:auto;accent-color:var(--gl)" checked> 🔀 Randomized snake
+      </label>
+      <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;margin:0;text-transform:none;letter-spacing:0;font-size:.88rem;color:var(--txt)">
+        <input type="radio" name="draft-mode" value="manual" id="mode-manual" onchange="onDraftModeChange()" style="width:auto;accent-color:var(--gl)"> ✏️ Manual order
+      </label>
+    </div>
+
+    <!-- Randomized mode -->
+    <div id="draft-mode-random">
+      <div class="muted sm mb1">Round 1 order shown. Snake reverses each round.</div>
+      <button class="btn bp bsm mb1" onclick="randomizeDraftOrder()">🔀 Randomize Now</button>
+      <ol class="order-list" id="order-list"></ol>
+    </div>
+
+    <!-- Manual mode -->
+    <div id="draft-mode-manual" style="display:none">
+      <div class="muted sm mb1">Enter participant names in draft order. Snake still reverses each round.</div>
+      <div id="manual-order-inputs"></div>
+      <button class="btn bp bsm mt1" onclick="saveManualOrder()">✓ Set This Order</button>
+      <div id="manual-order-msg" class="sm muted mt1" style="display:none"></div>
+    </div>
   </div>
   <button class="btn bg_ mt1" onclick="startDraft()" style="width:100%;padding:.65rem">Start Draft →</button>
 </div>
@@ -327,7 +346,7 @@ const ESPN='https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard';
 let S={
   tournament:null,tournId:null,
   participants:['Mike','Dani','Nick','Kenzy','Logan','Scott','Andrew','Jana','Chris','Bryan','Jace'],
-  draftOrder:null,picks:{},draftLog:[],draftComplete:false,currentDraftSlot:0,
+  draftOrder:null,draftMode:'random',picks:{},draftLog:[],draftComplete:false,currentDraftSlot:0,
   field:[],scores:{},salaries:{},nameMap:{},history:[],
   isAdmin:false,adminName:'Andrew',
   fee:10,cap:50000,cutMin:4,cutOfficial:false,maxPick:2
@@ -634,6 +653,13 @@ function renderDraftComplete(el){
 // ── Setup ──────────────────────────────────────────
 function renderSetup(){
   updateAdminUI();renderPTags();renderFieldTable();renderOrderList();
+  // Restore draft mode radio
+  const isManual=S.draftMode==='manual';
+  const rm=document.getElementById('mode-random');const mm=document.getElementById('mode-manual');
+  if(rm)rm.checked=!isManual;if(mm)mm.checked=isManual;
+  document.getElementById('draft-mode-random').style.display=isManual?'none':'block';
+  document.getElementById('draft-mode-manual').style.display=isManual?'block':'none';
+  if(isManual)renderManualOrderInputs();
   const lt=document.getElementById('tourn-locked-text');
   if(lt)lt.innerHTML=S.tournament?`<strong style="color:var(--txt)">${S.tournament.name}</strong><br><span class="muted">${S.tournament.venue||''}${S.tournament.date?' · '+new Date(S.tournament.date).toLocaleDateString():''}</span>`:'No tournament selected. Admin must set it.';
   if(S.isAdmin)fetchSchedule();
@@ -659,6 +685,42 @@ function renderOrderList(){
   const el=document.getElementById('order-list');if(!el)return;
   const order=S.draftOrder||S.participants;
   el.innerHTML=order.map(p=>`<li><span>${p}</span></li>`).join('');
+}
+
+function onDraftModeChange(){
+  const isManual=document.getElementById('mode-manual').checked;
+  document.getElementById('draft-mode-random').style.display=isManual?'none':'block';
+  document.getElementById('draft-mode-manual').style.display=isManual?'block':'none';
+  if(isManual)renderManualOrderInputs();
+  S.draftMode=isManual?'manual':'random';
+  save();
+}
+
+function renderManualOrderInputs(){
+  const el=document.getElementById('manual-order-inputs');if(!el)return;
+  const current=S.draftOrder||S.participants;
+  el.innerHTML=current.map((p,i)=>`
+    <div class="flex mb05" style="gap:.5rem">
+      <span class="sm muted" style="width:20px;text-align:right;flex-shrink:0">${i+1}</span>
+      <input type="text" value="${p}" id="manual-p-${i}" placeholder="Participant name..." style="flex:1;font-size:.85rem">
+    </div>`).join('');
+}
+
+function saveManualOrder(){
+  const current=S.draftOrder||S.participants;
+  const newOrder=[];
+  for(let i=0;i<current.length;i++){
+    const inp=document.getElementById('manual-p-'+i);
+    const val=inp?inp.value.trim():'';
+    if(val)newOrder.push(val);
+  }
+  if(newOrder.length===0){alert('Please enter at least one name.');return;}
+  S.draftOrder=newOrder;
+  save();
+  const msg=document.getElementById('manual-order-msg');
+  if(msg){msg.style.display='block';msg.textContent='✓ Order saved: '+newOrder.join(' → ');setTimeout(()=>{msg.style.display='none';},4000);}
+  // Also update the randomized list view in case they switch back
+  renderOrderList();
 }
 function onTournSel(){
   const sel=document.getElementById('tourn-sel');const o=sel.selectedOptions[0];if(!o||!o.value)return;
