@@ -875,16 +875,27 @@ function renderFieldTable(){
 function importPaste(){
   const raw=document.getElementById('sal-paste').value.trim();const msgEl=document.getElementById('import-msg');
   if(!raw){msgEl.textContent='Nothing to import.';return;}
-  const lines=raw.split(/\r?\n/).filter(l=>l.trim());let count=0,errors=0;
-  lines.forEach(line=>{let parts=line.split('\t');if(parts.length<2)parts=line.split(',');if(parts.length<2){errors++;return;}
+  const lines=raw.split(/\r?\n/).filter(function(l){return l.trim();});let count=0,errors=0;
+  lines.forEach(function(line){
+    let parts=line.split('\t');if(parts.length<2)parts=line.split(',');if(parts.length<2){errors++;return;}
     const name=parts[0].trim();const salStr=parts[parts.length-1].replace(/[\$,\s]/g,'').trim();const sal=parseInt(salStr);
     if(!name||isNaN(sal)||sal<=0){errors++;return;}
-    // Apply existing name map on import
+    // Check existing name map first
     const mapped=(S.nameMap&&S.nameMap[name])||name;
-    S.salaries[mapped]=sal;count++;});
+    // Then try accent-normalized match against ESPN field
+    let finalName=mapped;
+    if(S.field.length){
+      const espnNames=S.field.map(function(f){return f.name;});
+      // Check if mapped name exists in field (normalized)
+      const normMapped=normalizeStr(mapped);
+      const exactMatch=espnNames.find(function(n){return normalizeStr(n)===normMapped;});
+      if(exactMatch)finalName=exactMatch;
+    }
+    S.salaries[finalName]=sal;count++;
+  });
   save();
   const unmatched=getUnmatchedCount();
-  msgEl.innerHTML=`✓ ${count} imported${errors?' ('+errors+' skipped)':''}${unmatched?` <span style="color:var(--rl)">· ${unmatched} name${unmatched!==1?'s':''} unmatched — check Settings → Name Mapping</span>`:''}`;
+  msgEl.innerHTML='✓ '+count+' imported'+(errors?' ('+errors+' skipped)':'')+(unmatched?(' <span style="color:var(--rl)">· '+unmatched+' name'+(unmatched!==1?'s':'')+' unmatched — check Settings → Name Mapping</span>'):'');
   document.getElementById('sal-paste').value='';renderFieldTable();renderFieldTab();
   if(document.getElementById('tab-draft').classList.contains('active'))renderDraft();
 }
@@ -991,24 +1002,24 @@ function applyNameMapToSalaries(){
   });
 }
 
+// Normalize accented characters for fuzzy matching
+function normalizeStr(str){
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]/g,'');
+}
+
 // Fuzzy match: find closest ESPN name for a DK name
 function fuzzyMatch(dkName, espnNames){
-  const dk=dkName.toLowerCase().replace(/[^a-z]/g,'');
+  const dk=normalizeStr(dkName);
   let best=null,bestScore=0;
-  espnNames.forEach(espn=>{
-    const e=espn.toLowerCase().replace(/[^a-z]/g,'');
-    // Score: shared characters / max length
+  espnNames.forEach(function(espn){
+    const e=normalizeStr(espn);
     const longer=Math.max(dk.length,e.length);
     if(!longer)return;
-    // Check if last name matches (strong signal)
-    const dkLast=dk.split('').slice(-6).join('');
-    const eLast=e.split('').slice(-6).join('');
+    const dkLast=dk.slice(-6);const eLast=e.slice(-6);
     let score=0;
-    // Exact last-name match boost
     if(dkLast===eLast)score+=0.5;
-    // Character overlap
     const dkSet=new Set(dk);const eSet=new Set(e);
-    let shared=0;dkSet.forEach(c=>{if(eSet.has(c))shared++;});
+    let shared=0;dkSet.forEach(function(c){if(eSet.has(c))shared++;});
     score+=shared/longer*0.5;
     if(score>bestScore){bestScore=score;best=espn;}
   });
@@ -1126,11 +1137,10 @@ function renderSavedMaps(){
     </div>`;
 }
 
-// Also show unmatched count badge on field table
 function getUnmatchedCount(){
   if(!S.field.length||!Object.keys(S.salaries).length)return 0;
-  const espnNames=new Set(S.field.map(f=>f.name));
-  return Object.keys(S.salaries).filter(dk=>!espnNames.has(dk)).length;
+  const espnNorms=new Set(S.field.map(function(f){return normalizeStr(f.name);}));
+  return Object.keys(S.salaries).filter(function(dk){return !espnNorms.has(normalizeStr(dk));}).length;
 }
 
 // ── Admin / Settings ───────────────────────────────
