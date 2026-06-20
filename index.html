@@ -1041,6 +1041,8 @@ function clearManualCuts(){
   document.getElementById('cut-list-msg').textContent='Overrides cleared.';
   save();renderStandings();renderFieldTab();renderFieldTable();
 }
+
+function applyNameMapToSalaries(){
   if(!S.nameMap)return;
   Object.entries(S.nameMap).forEach(([dk,espn])=>{
     if(S.salaries[dk]!==undefined&&dk!==espn){
