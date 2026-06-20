@@ -47,7 +47,9 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
 .sal-bar{height:100%;border-radius:3px;transition:width .3s}
 .sal-ok{background:var(--gl)}.sal-warn{background:var(--gold)}.sal-over{background:var(--red)}
 .prow{background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:.9rem 1.1rem;margin-bottom:.65rem;transition:border-color .2s}
-.prow.elim{border-color:var(--red);background:rgba(192,57,43,.07)}
+.prow.elim{border-color:var(--bdr);background:rgba(10,26,15,.5);opacity:.45;filter:grayscale(.6)}
+.prow.elim .pname,.prow.elim .chip,.prow.elim .sc{color:var(--txt3)!important;border-color:var(--bdr)!important}
+.prow.elim .elim-badge{opacity:1!important;filter:none!important}
 .prow.lead{border-color:var(--gold)}
 .pname{font-family:var(--fd);font-size:1.15rem;letter-spacing:1px}
 .chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.45rem}
@@ -320,7 +322,6 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
         <div><label>ESPN Name</label>
           <select id="map-espn-input">
             <option value="">-- Select ESPN name --</option>
-            ${/* populated dynamically */''}
           </select>
         </div>
         <button class="btn bp bsm" onclick="saveManualMap()" style="margin-top:1.1rem">Save</button>
@@ -355,12 +356,8 @@ let S={
 const SUPA_URL='https://qzmiyusbicdwfgefbvxu.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bWl5dXNiaWNkd2ZnZWZidnh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2Mzc5NjcsImV4cCI6MjA5NzIxMzk2N30.6f1_-gPc-4LWwnVYnSd1gqxBHpLDm8VDnQV9FwfL4Kc';
 
-// ── Supabase sync ──────────────────────────────────
-// We store the entire S object (minus scores/field which come from ESPN live)
-// as a single JSON blob in pool_state table, row id='main'
-
 let _saveTimer=null;
-let _syncStatus=''; // 'saving','saved','error'
+let _syncStatus='';
 
 function setSyncStatus(s){
   _syncStatus=s;
@@ -379,12 +376,10 @@ async function supaLoad(){
     });
     const rows=await r.json();
     if(rows&&rows[0]&&rows[0].data&&Object.keys(rows[0].data).length){
-      // Merge remote into S, keeping local isAdmin preference
       const remote=rows[0].data;
       const wasAdmin=S.isAdmin;
       S=Object.assign(S,remote);
-      S.isAdmin=wasAdmin; // isAdmin is per-device, not shared
-      // scores & field are fetched live, don't restore stale ones
+      S.isAdmin=wasAdmin;
       S.scores={};S.field=[];
     }
   }catch(e){console.error('Supabase load error',e);}
@@ -392,7 +387,6 @@ async function supaLoad(){
 
 async function supaSave(){
   setSyncStatus('saving');
-  // Don't persist live ESPN data — always re-fetch on load
   const toSave=Object.assign({},S);
   delete toSave.scores;delete toSave.field;delete toSave.isAdmin;
   try{
@@ -406,16 +400,13 @@ async function supaSave(){
   }catch(e){setSyncStatus('error');console.error('Supabase save error',e);}
 }
 
-// Debounced save — batches rapid changes into one write
 function save(){
-  // Always keep localStorage as fallback
   try{localStorage.setItem('gp_pool',JSON.stringify(S));}catch(e){}
   if(_saveTimer)clearTimeout(_saveTimer);
   _saveTimer=setTimeout(()=>supaSave(),800);
 }
 
 function load(){
-  // Load from localStorage as immediate fallback while Supabase loads
   try{const s=localStorage.getItem('gp_pool');if(s)S=Object.assign(S,JSON.parse(s));}catch(e){}
 }
 
@@ -433,10 +424,9 @@ async function clearAll(){
   location.reload();
 }
 
-// Poll for remote changes every 30s (so non-admin devices see updates)
 function startSync(){
   setInterval(async()=>{
-    if(document.hidden)return; // don't sync if tab not visible
+    if(document.hidden)return;
     await supaLoad();
     renderStandings();renderBanner();
     if(S.field&&S.field.length){renderFieldTab();renderFieldTable();}
@@ -653,7 +643,6 @@ function renderDraftComplete(el){
 // ── Setup ──────────────────────────────────────────
 function renderSetup(){
   updateAdminUI();renderPTags();renderFieldTable();renderOrderList();
-  // Restore draft mode radio
   const isManual=S.draftMode==='manual';
   const rm=document.getElementById('mode-random');const mm=document.getElementById('mode-manual');
   if(rm)rm.checked=!isManual;if(mm)mm.checked=isManual;
@@ -719,7 +708,6 @@ function saveManualOrder(){
   save();
   const msg=document.getElementById('manual-order-msg');
   if(msg){msg.style.display='block';msg.textContent='✓ Order saved: '+newOrder.join(' → ');setTimeout(()=>{msg.style.display='none';},4000);}
-  // Also update the randomized list view in case they switch back
   renderOrderList();
 }
 function onTournSel(){
@@ -752,7 +740,6 @@ async function fetchSchedule(){
       o.textContent=(e.label||'Event')+' — '+(e.startDate?new Date(e.startDate).toLocaleDateString():'');
       sel.appendChild(o);
     });
-    // Auto-select current live event
     if(currentEvents.length&&!S.tournId){
       const cur=currentEvents[0];
       sel.value=cur.id;S.tournId=cur.id;
@@ -763,12 +750,10 @@ async function fetchSchedule(){
 }
 async function fetchField(){
   try{
-    // First try fetching the specific event directly if we have an ID
     let players=[];
     let evInfo=null;
 
     if(S.tournId){
-      // Try the specific event endpoint first
       try{
         const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard?event='+S.tournId);
         const d=await r.json();
@@ -780,13 +765,10 @@ async function fetchField(){
       }catch(e){console.log('Specific event fetch failed, falling back to scoreboard');}
     }
 
-    // Fall back to scoreboard and find the matching event
     if(players.length===0){
       const r=await fetch(ESPN);const d=await r.json();
       const events=d.events||[];
-      // Try to find the selected tournament in the current events
       let ev=S.tournId?events.find(function(e){return e.id===S.tournId;}):null;
-      // If not found (e.g. it's already finished and dropped off), just use first event
       if(!ev)ev=events[0];
       if(!ev){console.warn('No event found');return;}
       players=(ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors)||[];
@@ -794,7 +776,6 @@ async function fetchField(){
       S.tournId=ev.id;
     }
 
-    // Update tournament info
     if(evInfo){
       S.tournament=Object.assign(S.tournament||{},evInfo);
     }
@@ -868,7 +849,7 @@ function renderFieldTable(){
     <td style="font-weight:500">${r.name}${r.picks>=maxPick?' <span style="font-size:.68rem;color:var(--rl)">(max)</span>':''}${r.unmatched?' <span style="font-size:.68rem;color:var(--rl)">⚠ no ESPN match</span>':''}</td>
     <td>${sbadge(r.score)}</td>
     <td style="font-family:var(--fm);color:${r.unmatched?'var(--rl)':'var(--gold)'};font-size:.82rem">${r.salary?'$'+Number(r.salary).toLocaleString():'—'}</td>
-    <td style="font-family:var(--fm);font-size:.8rem;color:${r.picks>=maxPick?'var(--rl)':'var(--txt3)'}">${r.picks}/${maxPick}</td>
+    <td style="font-family:var(--fm);font-size:.8rem;color:${r.picks>=maxPick?'var(--rl)':'var(--txt3)'}">${r.picks}/${r.maxPick||maxPick}</td>
   </tr>`).join('');
   document.getElementById('field-sal-card').style.display='block';
 }
@@ -880,13 +861,10 @@ function importPaste(){
     let parts=line.split('\t');if(parts.length<2)parts=line.split(',');if(parts.length<2){errors++;return;}
     const name=parts[0].trim();const salStr=parts[parts.length-1].replace(/[\$,\s]/g,'').trim();const sal=parseInt(salStr);
     if(!name||isNaN(sal)||sal<=0){errors++;return;}
-    // Check existing name map first
     const mapped=(S.nameMap&&S.nameMap[name])||name;
-    // Then try accent-normalized match against ESPN field
     let finalName=mapped;
     if(S.field.length){
       const espnNames=S.field.map(function(f){return f.name;});
-      // Check if mapped name exists in field (normalized)
       const normMapped=normalizeStr(mapped);
       const exactMatch=espnNames.find(function(n){return normalizeStr(n)===normMapped;});
       if(exactMatch)finalName=exactMatch;
@@ -925,7 +903,7 @@ function renderStandings(){
     const rank=i+1;const warn=!S.cutOfficial&&r.cutCount<cutMin;
     const ts=r.total===0?'E':r.total>0?'+'+r.total:String(r.total);
     let medal='';
-    if(r.elim)medal=`<span style="color:var(--rl);font-size:1rem">✕</span>`;
+    if(r.elim)medal=`<span style="color:var(--txt3);font-size:1rem">✕</span>`;
     else if(rank===1)medal=`<span class="medal m1">1</span>`;
     else if(rank===2)medal=`<span class="medal m2">2</span>`;
     else if(rank===3)medal=`<span class="medal m3">3</span>`;
@@ -933,7 +911,7 @@ function renderStandings(){
     const budgetStr=hasSal&&r.spend?` · $${r.spend.toLocaleString()}`:'';
     return`<div class="prow ${r.elim?'elim':''} ${rank===1&&!r.elim?'lead':''}">
       <div class="fb"><div class="flex">${medal}<span class="pname">${r.name}</span>
-        ${r.elim?'<span class="spill" style="background:rgba(192,57,43,.2);color:var(--rl);border:1px solid var(--red);font-size:.68rem;padding:.2rem .65rem;border-radius:20px;text-transform:uppercase;letter-spacing:.4px">ELIMINATED</span>':''}
+        ${r.elim?'<span class="spill elim-badge" style="background:rgba(100,100,100,.25);color:#999;border:1px solid #555;font-size:.68rem;padding:.2rem .65rem;border-radius:20px;text-transform:uppercase;letter-spacing:.4px">ELIMINATED</span>':''}
         ${warn?`<span class="sm" style="color:var(--rl)">⚠ ${r.cutCount}/${r.picks.length} cuts</span>`:''}
       </div><div class="flex"><span class="sm muted">${r.cutCount}/${r.picks.length} cut${budgetStr}</span>${sbadge(ts)}</div></div>
       <div class="chips">${r.gdata.map(g=>`<span class="chip ${g.madeCut?'mc':'xc'}">${g.name} ${sbadge(g.score)}</span>`).join('')}</div>
@@ -985,13 +963,8 @@ function toggleHist(i){document.getElementById('hbody-'+i).classList.toggle('ope
 function deleteHistory(i){if(!confirm('Delete this record?'))return;S.history.splice(i,1);save();renderHistory();}
 
 // ── Name Mapping ───────────────────────────────────
-// S.nameMap = { "R. McIlroy": "Rory McIlroy", ... }
-// resolvedName(n) returns the ESPN name for any DK name
-
 function resolvedName(n){return(S.nameMap&&S.nameMap[n])||n;}
 
-// Apply nameMap to salaries so scores link correctly
-// salaries are always stored under the ESPN name after mapping
 function applyNameMapToSalaries(){
   if(!S.nameMap)return;
   Object.entries(S.nameMap).forEach(([dk,espn])=>{
@@ -1002,12 +975,10 @@ function applyNameMapToSalaries(){
   });
 }
 
-// Normalize accented characters for fuzzy matching
 function normalizeStr(str){
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]/g,'');
 }
 
-// Fuzzy match: find closest ESPN name for a DK name
 function fuzzyMatch(dkName, espnNames){
   const dk=normalizeStr(dkName);
   let best=null,bestScore=0;
@@ -1079,13 +1050,12 @@ function confirmMap(encodedDk){
   if(!espn){alert('Please select an ESPN name.');return;}
   if(!S.nameMap)S.nameMap={};
   S.nameMap[dk]=espn;
-  // Move salary to ESPN name
   if(S.salaries[dk]!==undefined){
     S.salaries[espn]=S.salaries[dk];
     delete S.salaries[dk];
   }
   save();
-  detectMismatches(); // re-run to refresh the list
+  detectMismatches();
   renderFieldTable();
   renderFieldTab();
 }
@@ -1093,7 +1063,6 @@ function confirmMap(encodedDk){
 function addManualMap(){
   const row=document.getElementById('manual-map-row');
   row.style.display=row.style.display==='none'?'block':'none';
-  // Populate ESPN dropdown
   const sel=document.getElementById('map-espn-input');
   sel.innerHTML='<option value="">-- Select ESPN name --</option>'+
     S.field.map(f=>f.name).sort().map(n=>`<option value="${n}">${n}</option>`).join('');
@@ -1144,11 +1113,7 @@ function getUnmatchedCount(){
 }
 
 // ── Admin / Settings ───────────────────────────────
-// Password is stored as a simple hash in S.adminPwHash (shared via Supabase)
-// Default password: "thepool" — admin can change it after first login
-
 function simpleHash(str){
-  // djb2 hash — good enough for a family golf pool
   var hash=5381;
   for(var i=0;i<str.length;i++){hash=((hash<<5)+hash)+str.charCodeAt(i);hash=hash&hash;}
   return String(hash>>>0);
@@ -1166,7 +1131,6 @@ function adminLogin(){
     document.getElementById('admin-pw-input').value='';
     errEl.style.display='none';
     updateAdminUI();
-    // Save isAdmin to localStorage only (not Supabase — it's per-device)
     try{localStorage.setItem('gp_admin',JSON.stringify({isAdmin:true,expires:Date.now()+8*3600*1000}));}catch(e){}
   } else {
     errEl.style.display='block';errEl.textContent='Incorrect password.';
@@ -1187,18 +1151,15 @@ function changeAdminPassword(){
   S.adminPwHash=simpleHash(newPw);
   document.getElementById('admin-pw-new').value='';
   msgEl.style.display='block';msgEl.textContent='✓ Password updated and saved.';msgEl.style.color='var(--gl)';
-  save(); // saves hash to Supabase so it persists
+  save();
   setTimeout(()=>{msgEl.style.display='none';},3000);
 }
 
 function updateAdminUI(){
   const a=S.isAdmin;
-  // Nav badge
   document.getElementById('admin-nav-badge').style.display=a?'inline':'none';
-  // Login / loggedin panels
   const lw=document.getElementById('admin-login-wrap');if(lw)lw.style.display=a?'none':'block';
   const aw=document.getElementById('admin-loggedin-wrap');if(aw)aw.style.display=a?'block':'none';
-  // Setup tab admin controls
   document.getElementById('tourn-admin-controls').style.display=a?'block':'none';
   document.getElementById('tourn-locked-view').style.display=a?'none':'block';
   document.getElementById('tourn-admin-badge').style.display=a?'inline':'none';
@@ -1219,19 +1180,14 @@ function saveSettings(){
 
 // ── Boot ───────────────────────────────────────────
 (async()=>{
-  // Show loading state
   document.getElementById('standings-list').innerHTML='<div class="muted"><span class="spinner"></span> Loading shared data…</div>';
-  // Load localStorage immediately for fast render
   load();
-  // Then load from Supabase (authoritative)
   await supaLoad();
-  // Restore settings UI
   const fi=document.getElementById('fee-input');if(fi)fi.value=S.fee||10;
   const ci=document.getElementById('cap-input');if(ci)ci.value=S.cap||50000;
   const cmi=document.getElementById('cutmin-input');if(cmi)cmi.value=S.cutMin||4;
   const mpi=document.getElementById('maxpick-input');if(mpi)mpi.value=S.maxPick||2;
   const co=document.getElementById('cut-official');if(co)co.checked=!!S.cutOfficial;
-  // Restore admin session if still valid (8hr window)
   try{
     const adm=JSON.parse(localStorage.getItem('gp_admin')||'{}');
     if(adm.isAdmin&&adm.expires&&Date.now()<adm.expires)S.isAdmin=true;
@@ -1239,9 +1195,7 @@ function saveSettings(){
   updateAdminUI();
   renderBanner();
   renderStandings();
-  // Fetch live scores
   if(S.tournId)fetchField();
-  // Start background sync polling
   startSync();
 })();
 </script>
