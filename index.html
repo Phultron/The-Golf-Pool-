@@ -43,7 +43,9 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
 .scu{background:rgba(45,158,88,.2);color:#4dcc7a}
 .sco{background:rgba(192,57,43,.2);color:#e74c3c}
 .sce{background:rgba(168,201,180,.12);color:var(--txt2)}
-.sal-bar-wrap{height:6px;background:var(--bdr);border-radius:3px;overflow:hidden;flex:1}
+.col-hdr{font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);text-align:right;padding-right:.25rem}
+.score-col{font-family:var(--fm);font-size:.82rem;text-align:right;width:50px;padding-right:.25rem}
+.thru-col{font-family:var(--fm);font-size:.7rem;color:var(--txt3);text-align:right;width:46px}
 .sal-bar{height:100%;border-radius:3px;transition:width .3s}
 .sal-ok{background:var(--gl)}.sal-warn{background:var(--gold)}.sal-over{background:var(--red)}
 .prow{background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:.9rem 1.1rem;margin-bottom:.65rem;transition:border-color .2s}
@@ -828,40 +830,42 @@ async function fetchField(){
       var f=S.field[i];
       var isCut=f.status.toUpperCase().includes('CUT');
 
-      // Today's round score — linescores is array of round strokes
-      // Find the most recent completed round
-      var todayScore=null;
+      // Today's round score + thru hole
+      var todayScore=null;var thru=null;
       var linescores=p.linescores||[];
-      // linescores entries have a 'value' (strokes) or 'displayValue'
-      // The last non-zero entry is the current/most recent round
       if(linescores.length>0){
-        // Try to get the current round score relative to par
-        // ESPN sometimes gives displayValue like "-3", "+2", "E" directly
         var lastRound=linescores[linescores.length-1];
         if(lastRound){
           var dv=lastRound.displayValue||'';
           var val=lastRound.value;
+          // Thru hole
+          if(lastRound.period!==undefined)thru=lastRound.period;
+          if(p.status&&p.status.period)thru=p.status.period;
+          // Try to get hole-by-hole thru from competitor status
+          if(p.status&&p.status.thru!==undefined)thru=p.status.thru;
+          // Score relative to par
           if(dv&&dv!=='0'&&dv!=='-'){
-            // displayValue might already be relative ("+2") or strokes ("71")
             var dvNum=parseInt(dv.replace('+',''));
             if(!isNaN(dvNum)){
-              if(dvNum>20){
-                // It's strokes, convert to relative
-                var rel=dvNum-par;
-                todayScore=rel<0?String(rel):rel===0?'E':'+'+rel;
-              } else {
-                // Already relative
-                todayScore=dv.startsWith('+')||dv.startsWith('-')||dv==='E'?dv:(dvNum===0?'E':(dvNum>0?'+'+dvNum:String(dvNum)));
-              }
+              if(dvNum>20){var rel=dvNum-par;todayScore=rel<0?String(rel):rel===0?'E':'+'+rel;}
+              else{todayScore=dv.startsWith('+')||dv.startsWith('-')||dv==='E'?dv:(dvNum===0?'E':(dvNum>0?'+'+dvNum:String(dvNum)));}
             }
           } else if(val!==undefined&&val!==null&&val!==0){
-            var rel=Number(val)-par;
-            todayScore=rel<0?String(rel):rel===0?'E':'+'+rel;
+            var rel=Number(val)-par;todayScore=rel<0?String(rel):rel===0?'E':'+'+rel;
           }
         }
       }
+      // Thru display: F if finished, H# if in progress
+      var thruDisplay=null;
+      if(isCut){thruDisplay='CUT';}
+      else if(p.status&&p.status.type){
+        var stype=p.status.type.name||'';
+        if(stype.includes('complete')||stype.includes('final')||stype==='STATUS_PLAY_COMPLETE'){thruDisplay='F';}
+        else if(thru!==null&&thru!==undefined){thruDisplay='H'+thru;}
+        else if(stype.includes('active')){thruDisplay=thru?'H'+thru:'—';}
+      }
 
-      S.scores[f.name]={score:f.score,n:s2n(f.score),today:todayScore,made_cut:!isCut,status:f.status};
+      S.scores[f.name]={score:f.score,n:s2n(f.score),today:todayScore,thru:thruDisplay,made_cut:!isCut,status:f.status};
     });
 
     save();renderFieldTab();renderFieldTable();renderStandings();renderBanner();
@@ -988,7 +992,13 @@ function renderStandings(){
   if(!results.length){document.getElementById('standings-list').innerHTML='<div class="alert-i">No picks yet. Run the <strong>Draft</strong>.</div>';renderBanner();return;}
   results.sort((a,b)=>{if(a.elim&&!b.elim)return 1;if(!a.elim&&b.elim)return-1;if(a.total!==b.total)return a.total-b.total;if(b.cutCount!==a.cutCount)return b.cutCount-a.cutCount;return a.best-b.best;});
   const cutMin=S.cutMin||4;const hasSal=hasSalaries();
-  document.getElementById('standings-list').innerHTML=results.map((r,i)=>{
+  const colHdr=`<div style="display:grid;grid-template-columns:1fr 52px 52px 46px;padding:.15rem 1.1rem .25rem;align-items:center">
+    <div></div>
+    <div class="col-hdr">Total</div>
+    <div class="col-hdr">Today</div>
+    <div class="col-hdr">Thru</div>
+  </div>`;
+  document.getElementById('standings-list').innerHTML=colHdr+results.map((r,i)=>{
     const rank=i+1;const warn=!S.cutOfficial&&r.cutCount<cutMin;
     const ts=r.total===0?'E':r.total>0?'+'+r.total:String(r.total);
     let medal='';
@@ -999,19 +1009,26 @@ function renderStandings(){
     else medal=`<span style="color:var(--txt3);font-family:var(--fm);font-size:.8rem;width:22px;text-align:center;display:inline-block">${rank}</span>`;
     const budgetStr=hasSal&&r.spend?` · $${r.spend.toLocaleString()}`:'';
     const missedCount=r.gdata.filter(g=>!g.madeCut).length;
+    const todaySum=r.gdata.reduce((sum,g)=>{const sc=S.scores[g.name]||{};return sum+(sc.today?s2n(sc.today):0);},0);
+    const todayStr=r.gdata.length&&r.gdata.some(g=>S.scores[g.name]&&S.scores[g.name].today)?(todaySum===0?'E':todaySum>0?'+'+todaySum:String(todaySum)):null;
     return`<div class="prow ${r.elim?'elim':''} ${rank===1&&!r.elim?'lead':''}" style="${r.elim?'opacity:.45;filter:grayscale(0.6)':''}">
-      <div class="fb">
-        <div class="flex">${medal}
-          <span class="pname" style="${r.elim?'text-decoration:line-through;color:var(--txt3)':''}">${r.name}</span>
-          ${r.elim?`<span class="spill" style="background:rgba(192,57,43,.2);color:var(--rl);border:1px solid var(--red);font-size:.68rem;padding:.2rem .65rem;border-radius:20px;text-transform:uppercase;letter-spacing:.4px">ELIMINATED · ${missedCount} missed cut</span>`:''}
-          ${warn?`<span class="sm" style="color:var(--rl)">⚠ ${r.cutCount}/${r.picks.length} cuts</span>`:''}
+      <div style="display:grid;grid-template-columns:1fr 52px 52px 46px;align-items:center;gap:.25rem">
+        <div class="flex" style="min-width:0;overflow:hidden">
+          ${medal}
+          <span class="pname" style="${r.elim?'text-decoration:line-through;color:var(--txt3)':''};">${r.name}</span>
+          ${r.elim?`<span style="background:rgba(192,57,43,.2);color:var(--rl);border:1px solid var(--red);font-size:.62rem;padding:.1rem .45rem;border-radius:20px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;flex-shrink:0">elim · ${missedCount} cut</span>`:''}
+          ${warn?`<span class="sm" style="color:var(--rl);white-space:nowrap;flex-shrink:0">⚠ ${r.cutCount}/${r.picks.length}</span>`:''}
+          <span class="sm muted" style="white-space:nowrap;flex-shrink:0">${r.cutCount}/${r.picks.length} cut${budgetStr}</span>
         </div>
-        <div class="flex"><span class="sm muted">${r.cutCount}/${r.picks.length} cut${budgetStr}</span>${sbadge(ts)}</div>
+        <div class="score-col">${sbadge(ts)}</div>
+        <div class="score-col">${todayStr?sbadge(todayStr):`<span class="muted" style="font-size:.75rem">—</span>`}</div>
+        <div class="thru-col">—</div>
       </div>
       <div class="chips">${r.gdata.map(g=>{
         const sc=S.scores[g.name]||{};
-        const todayBadge=sc.today?`<span style="font-size:.68rem;opacity:.75;margin-left:.15rem">${sc.today}</span>`:'';
-        return`<span class="chip ${g.madeCut?'mc':'xc'}" style="${!g.madeCut?'opacity:.5':''}">${g.name} ${sbadge(g.score)}${todayBadge}</span>`;
+        const todayBadge=sc.today?`<span style="font-family:var(--fm);font-size:.65rem;opacity:.8;margin-left:1px">${sc.today}</span>`:'';
+        const thruBadge=sc.thru?`<span style="font-size:.6rem;color:var(--txt3);font-family:var(--fm);margin-left:1px">${sc.thru}</span>`:'';
+        return`<span class="chip ${g.madeCut?'mc':'xc'}" style="${!g.madeCut?'opacity:.5':''}">${g.name} ${sbadge(g.score)}${todayBadge}${thruBadge}</span>`;
       }).join('')}</div>
     </div>`;
   }).join('');
