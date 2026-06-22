@@ -300,17 +300,20 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
       <input type="number" id="maxpick-input" min="1" max="11" value="2" style="width:70px" onchange="saveSettings()"></div></div>
   <div class="card">
     <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;margin:0;font-size:1rem;text-transform:none;letter-spacing:0;color:var(--txt)">
-      <input type="checkbox" id="cut-official" onchange="saveSettings();renderStandings()"> Cut is now official — eliminate participants below threshold
+      <input type="checkbox" id="cut-official" onchange="saveSettings();renderStandings();renderFieldTab()"> Cut is now official
     </label>
-  </div>
-  <div class="admin-section" id="cut-override-section" style="display:none">
-    <h3 class="mb1">✂️ Manual Cut List <span class="admin-badge">ADMIN ONLY</span></h3>
-    <div class="muted sm mb1">If the API is slow to update cuts, paste missed-cut golfer names here (one per line). These will override the API cut status.</div>
-    <textarea id="cut-list-input" placeholder="Jon Rahm&#10;Brooks Koepka&#10;..." style="min-height:120px;font-family:var(--fm);font-size:.82rem;margin-bottom:.5rem"></textarea>
-    <div class="flex" style="gap:.5rem">
-      <button class="btn bp bsm" onclick="applyManualCuts()">Apply Cut List</button>
-      <button class="btn bs bsm" onclick="clearManualCuts()">Clear Overrides</button>
-      <span id="cut-list-msg" class="sm muted"></span>
+    <div id="cutline-wrap" style="margin-top:.75rem;display:none">
+      <div class="muted sm mb05">Golfers at or above this score missed the cut. Participants with fewer than <strong id="cutmin-display">4</strong> surviving golfers are eliminated.</div>
+      <div class="flex mt1" style="gap:.75rem;flex-wrap:wrap;align-items:center">
+        <div class="flex" style="gap:.5rem;align-items:center">
+          <label style="white-space:nowrap;margin:0;color:var(--txt);font-size:.88rem;text-transform:none;letter-spacing:0">Cut line score:</label>
+          <select id="cutline-score" onchange="saveSettings();renderStandings();renderFieldTab()" style="width:90px;font-family:var(--fm)">
+            <option value="">-- Set --</option>
+            ${[...Array(31)].map((_,i)=>{const v=i-5;const s=v<0?String(v):v===0?'E':'+'+v;return`<option value="${v}">${s}</option>`;}).join('')}
+          </select>
+        </div>
+        <span id="cut-summary" class="sm muted"></span>
+      </div>
     </div>
   </div>
   <div class="admin-section" id="namemap-section" style="display:none">
@@ -359,7 +362,7 @@ let S={
   draftOrder:null,draftMode:'random',picks:{},draftLog:[],draftComplete:false,currentDraftSlot:0,
   field:[],scores:{},salaries:{},nameMap:{},manualCuts:{},history:[],
   isAdmin:false,adminName:'Andrew',
-  fee:10,cap:50000,cutMin:4,cutOfficial:false,maxPick:2
+  fee:10,cap:50000,cutMin:4,cutOfficial:false,cutlineScore:null,maxPick:2
 };
 
 const SUPA_URL='https://qzmiyusbicdwfgefbvxu.supabase.co';
@@ -920,9 +923,17 @@ function calcP(name){
   const picks=(S.picks[name]||[]).filter(x=>x);let total=0,cutCount=0,best=999,spend=0;
   const gdata=picks.map(g=>{
     const sc=S.scores[g]||{score:'E',n:0,made_cut:true};
-    const manualCut=S.manualCuts&&S.manualCuts[g];
-    const madeCut=!manualCut&&sc.made_cut!==false;
-    total+=sc.n||0;if((sc.n||0)<best)best=sc.n||0;
+    const scoreNum=sc.n||0;
+    // Cutline: if cut is official and cutlineScore is set, use score comparison
+    // Otherwise fall back to API made_cut flag and manual overrides
+    let madeCut;
+    if(S.cutOfficial&&S.cutlineScore!==null&&S.cutlineScore!==undefined){
+      madeCut=scoreNum<S.cutlineScore;
+    } else {
+      const manualCut=S.manualCuts&&S.manualCuts[g];
+      madeCut=!manualCut&&sc.made_cut!==false;
+    }
+    total+=scoreNum;if(scoreNum<best)best=scoreNum;
     if(madeCut)cutCount++;
     spend+=Number(S.salaries[g])||0;
     return{name:g,score:sc.score||'E',madeCut};
@@ -1265,7 +1276,21 @@ function saveSettings(){
   S.cutMin=parseInt(document.getElementById('cutmin-input').value)||4;
   S.maxPick=parseInt(document.getElementById('maxpick-input').value)||2;
   S.cutOfficial=document.getElementById('cut-official').checked;
+  const clEl=document.getElementById('cutline-score');
+  S.cutlineScore=(clEl&&clEl.value!=='')?parseInt(clEl.value):null;
+  const clWrap=document.getElementById('cutline-wrap');
+  if(clWrap)clWrap.style.display=S.cutOfficial?'block':'none';
+  const cmd=document.getElementById('cutmin-display');if(cmd)cmd.textContent=S.cutMin||4;
+  updateCutSummary();
   save();
+}
+
+function updateCutSummary(){
+  const el=document.getElementById('cut-summary');if(!el)return;
+  if(!S.cutOfficial||S.cutlineScore===null||S.cutlineScore===undefined){el.textContent='';return;}
+  const cutN=S.field.filter(function(f){return s2n(f.score)>=S.cutlineScore;}).length;
+  const scoreStr=S.cutlineScore<0?String(S.cutlineScore):S.cutlineScore===0?'E':'+'+S.cutlineScore;
+  el.textContent=cutN+' golfer'+(cutN!==1?'s':'')+' at '+scoreStr+' or worse are cut.';
 }
 
 // ── Boot ───────────────────────────────────────────
@@ -1282,6 +1307,11 @@ function saveSettings(){
   const cmi=document.getElementById('cutmin-input');if(cmi)cmi.value=S.cutMin||4;
   const mpi=document.getElementById('maxpick-input');if(mpi)mpi.value=S.maxPick||2;
   const co=document.getElementById('cut-official');if(co)co.checked=!!S.cutOfficial;
+  const clWrap=document.getElementById('cutline-wrap');
+  if(clWrap)clWrap.style.display=S.cutOfficial?'block':'none';
+  const clEl=document.getElementById('cutline-score');
+  if(clEl&&S.cutlineScore!==null&&S.cutlineScore!==undefined)clEl.value=S.cutlineScore;
+  const cmd=document.getElementById('cutmin-display');if(cmd)cmd.textContent=S.cutMin||4;
   // Restore admin session if still valid (8hr window)
   try{
     const adm=JSON.parse(localStorage.getItem('gp_admin')||'{}');
