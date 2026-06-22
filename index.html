@@ -812,6 +812,9 @@ async function fetchField(){
       S.tournament=Object.assign(S.tournament||{},evInfo);
     }
 
+    // Get par for the course to compute round-relative scores
+    const par=ev.competitions&&ev.competitions[0]&&ev.competitions[0].situation&&ev.competitions[0].situation.par||72;
+
     S.field=players.map(function(p,i){
       var rawScore=typeof p.score==='string'?p.score:(p.score&&(p.score.displayValue||String(p.score.value))||'E');
       var scoreStr=rawScore;
@@ -821,9 +824,44 @@ async function fetchField(){
     });
 
     S.scores={};
-    S.field.forEach(function(f){
+    players.forEach(function(p,i){
+      var f=S.field[i];
       var isCut=f.status.toUpperCase().includes('CUT');
-      S.scores[f.name]={score:f.score,n:s2n(f.score),made_cut:!isCut,status:f.status};
+
+      // Today's round score — linescores is array of round strokes
+      // Find the most recent completed round
+      var todayScore=null;
+      var linescores=p.linescores||[];
+      // linescores entries have a 'value' (strokes) or 'displayValue'
+      // The last non-zero entry is the current/most recent round
+      if(linescores.length>0){
+        // Try to get the current round score relative to par
+        // ESPN sometimes gives displayValue like "-3", "+2", "E" directly
+        var lastRound=linescores[linescores.length-1];
+        if(lastRound){
+          var dv=lastRound.displayValue||'';
+          var val=lastRound.value;
+          if(dv&&dv!=='0'&&dv!=='-'){
+            // displayValue might already be relative ("+2") or strokes ("71")
+            var dvNum=parseInt(dv.replace('+',''));
+            if(!isNaN(dvNum)){
+              if(dvNum>20){
+                // It's strokes, convert to relative
+                var rel=dvNum-par;
+                todayScore=rel<0?String(rel):rel===0?'E':'+'+rel;
+              } else {
+                // Already relative
+                todayScore=dv.startsWith('+')||dv.startsWith('-')||dv==='E'?dv:(dvNum===0?'E':(dvNum>0?'+'+dvNum:String(dvNum)));
+              }
+            }
+          } else if(val!==undefined&&val!==null&&val!==0){
+            var rel=Number(val)-par;
+            todayScore=rel<0?String(rel):rel===0?'E':'+'+rel;
+          }
+        }
+      }
+
+      S.scores[f.name]={score:f.score,n:s2n(f.score),today:todayScore,made_cut:!isCut,status:f.status};
     });
 
     save();renderFieldTab();renderFieldTable();renderStandings();renderBanner();
@@ -859,9 +897,9 @@ async function debugAPI(){
 function renderFieldTab(){
   const el=document.getElementById('field-list');if(!S.field.length){el.innerHTML='<div class="muted">No field loaded.</div>';return;}
   const sorted=[...S.field].sort((a,b)=>s2n(a.score)-s2n(b.score));
-  el.innerHTML=`<table class="lbt"><thead><tr><th>Pos</th><th>Player</th><th>Score</th><th>Salary</th><th>Status</th></tr></thead><tbody>
+  el.innerHTML=`<table class="lbt"><thead><tr><th>Pos</th><th>Player</th><th>Total</th><th>Today</th><th>Salary</th><th>Status</th></tr></thead><tbody>
   ${sorted.map(p=>{const sc=S.scores[p.name]||{};const missed=sc.made_cut===false;const sal=S.salaries[p.name]?'$'+Number(S.salaries[p.name]).toLocaleString():'-';
-    return`<tr><td style="color:var(--txt3);font-family:var(--fm);font-size:.78rem">${p.pos}</td><td style="${missed?'text-decoration:line-through;color:var(--txt3)':''}">${p.name}</td><td>${sbadge(p.score)}</td><td style="font-family:var(--fm);color:var(--gold);font-size:.82rem">${sal}</td><td class="sm" style="color:${missed?'var(--rl)':'var(--txt3)'}">${missed?'Missed Cut':p.status||'Active'}</td></tr>`;}).join('')}</tbody></table>`;
+    return`<tr><td style="color:var(--txt3);font-family:var(--fm);font-size:.78rem">${p.pos}</td><td style="${missed?'text-decoration:line-through;color:var(--txt3)':''}">${p.name}</td><td>${sbadge(p.score)}</td><td>${sc.today?sbadge(sc.today):'<span class="muted">—</span>'}</td><td style="font-family:var(--fm);color:var(--gold);font-size:.82rem">${sal}</td><td class="sm" style="color:${missed?'var(--rl)':'var(--txt3)'}">${missed?'Missed Cut':p.status||'Active'}</td></tr>`;}).join('')}</tbody></table>`;
 }
 function renderFieldTable(){
   const body=document.getElementById('field-sal-body');const countEl=document.getElementById('field-count');if(!body)return;
@@ -970,7 +1008,11 @@ function renderStandings(){
         </div>
         <div class="flex"><span class="sm muted">${r.cutCount}/${r.picks.length} cut${budgetStr}</span>${sbadge(ts)}</div>
       </div>
-      <div class="chips">${r.gdata.map(g=>`<span class="chip ${g.madeCut?'mc':'xc'}" style="${!g.madeCut?'opacity:.5':''}">${g.name} ${sbadge(g.score)}</span>`).join('')}</div>
+      <div class="chips">${r.gdata.map(g=>{
+        const sc=S.scores[g.name]||{};
+        const todayBadge=sc.today?`<span style="font-size:.68rem;opacity:.75;margin-left:.15rem">${sc.today}</span>`:'';
+        return`<span class="chip ${g.madeCut?'mc':'xc'}" style="${!g.madeCut?'opacity:.5':''}">${g.name} ${sbadge(g.score)}${todayBadge}</span>`;
+      }).join('')}</div>
     </div>`;
   }).join('');
   renderBanner();
