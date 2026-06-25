@@ -796,14 +796,16 @@ async function fetchField(){
     }
 
     // Fall back to scoreboard and find the matching event
+    let currentEv=null;
     if(players.length===0){
       const r=await fetch(ESPN);const d=await r.json();
       const events=d.events||[];
       // Try to find the selected tournament in the current events
       let ev=S.tournId?events.find(function(e){return e.id===S.tournId;}):null;
-      // If not found (e.g. it's already finished and dropped off), just use first event
+      // If not found, just use first live event
       if(!ev)ev=events[0];
       if(!ev){console.warn('No event found');return;}
+      currentEv=ev;
       players=(ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors)||[];
       evInfo={name:ev.name||'',venue:(ev.competitions&&ev.competitions[0]&&ev.competitions[0].venue&&ev.competitions[0].venue.fullName)||'',date:ev.date||'',status:(ev.status&&ev.status.type&&ev.status.type.description)||''};
       S.tournId=ev.id;
@@ -815,7 +817,7 @@ async function fetchField(){
     }
 
     // Get par for the course to compute round-relative scores
-    const par=ev.competitions&&ev.competitions[0]&&ev.competitions[0].situation&&ev.competitions[0].situation.par||72;
+    const par=(currentEv&&currentEv.competitions&&currentEv.competitions[0]&&currentEv.competitions[0].situation&&currentEv.competitions[0].situation.par)||72;
 
     S.field=players.map(function(p,i){
       var rawScore=typeof p.score==='string'?p.score:(p.score&&(p.score.displayValue||String(p.score.value))||'E');
