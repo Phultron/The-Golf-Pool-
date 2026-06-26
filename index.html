@@ -311,7 +311,6 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
           <label style="white-space:nowrap;margin:0;color:var(--txt);font-size:.88rem;text-transform:none;letter-spacing:0">Cut line score:</label>
           <select id="cutline-score" onchange="saveSettings();renderStandings();renderFieldTab()" style="width:90px;font-family:var(--fm)">
             <option value="">-- Set --</option>
-            ${[...Array(31)].map((_,i)=>{const v=i-5;const s=v<0?String(v):v===0?'E':'+'+v;return`<option value="${v}">${s}</option>`;}).join('')}
           </select>
         </div>
         <span id="cut-summary" class="sm muted"></span>
@@ -1367,6 +1366,16 @@ function updateCutSummary(){
   const ci=document.getElementById('cap-input');if(ci)ci.value=S.cap||50000;
   const cmi=document.getElementById('cutmin-input');if(cmi)cmi.value=S.cutMin||4;
   const mpi=document.getElementById('maxpick-input');if(mpi)mpi.value=S.maxPick||2;
+  // Populate cutline score dropdown
+  const clSelEl=document.getElementById('cutline-score');
+  if(clSelEl){
+    for(var cutIdx=-5;cutIdx<=25;cutIdx++){
+      var cutOpt=document.createElement('option');
+      cutOpt.value=cutIdx;
+      cutOpt.textContent=cutIdx<0?String(cutIdx):cutIdx===0?'E':'+'+cutIdx;
+      clSelEl.appendChild(cutOpt);
+    }
+  }
   const co=document.getElementById('cut-official');if(co)co.checked=!!S.cutOfficial;
   const clWrap=document.getElementById('cutline-wrap');
   if(clWrap)clWrap.style.display=S.cutOfficial?'block':'none';
