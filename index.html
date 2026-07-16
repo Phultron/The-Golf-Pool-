@@ -101,7 +101,6 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
 .m1{background:var(--gold);color:var(--bg)}.m2{background:#b0bec5;color:var(--bg)}.m3{background:#a0855c;color:var(--bg)}
 .tag{background:var(--sur2);border:1px solid var(--bdr);border-radius:20px;padding:.15rem .55rem .15rem .7rem;font-size:.78rem;display:inline-flex;align-items:center;gap:.3rem}
 .tag button{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:.95rem;line-height:1;padding:0}
-/* Draft */
 .draft-wrap{background:var(--bg2);border:1px solid var(--gold);border-radius:10px;overflow:hidden;margin-bottom:1rem}
 .draft-header{background:rgba(201,168,76,.12);padding:1rem 1.25rem;border-bottom:1px solid rgba(201,168,76,.25)}
 .draft-title{font-family:var(--fd);font-size:1.5rem;letter-spacing:2px;color:var(--gold)}
@@ -131,7 +130,6 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
 .order-list li{counter-increment:ord;display:flex;align-items:center;gap:.5rem;padding:.35rem 0;border-bottom:1px solid rgba(45,90,61,.2);font-size:.88rem}
 .order-list li:last-child{border-bottom:none}
 .order-list li::before{content:counter(ord);font-family:var(--fm);font-size:.75rem;color:var(--txt3);width:18px;text-align:right;flex-shrink:0}
-/* Name mapping */
 .map-row{display:grid;grid-template-columns:1fr auto 1fr auto;gap:.5rem;align-items:center;padding:.4rem 0;border-bottom:1px solid rgba(45,90,61,.18);font-size:.83rem}
 .map-row:last-child{border-bottom:none}
 .map-arrow{color:var(--txt3);font-size:.9rem;text-align:center}
@@ -142,7 +140,6 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
 </style>
 </head>
 <body>
-
 <nav class="nav">
   <span class="nav-title">⛳ THE POOL</span>
   <button class="nt active" onclick="showTab('standings',this)">Standings</button>
@@ -154,7 +151,6 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
   <span id="sync-status" style="font-size:.72rem;margin-left:.5rem;color:var(--txt3)"></span>
 </nav>
 
-<!-- STANDINGS -->
 <div id="tab-standings" class="tc active">
   <div id="tbanner"></div>
   <div class="pot">
@@ -165,7 +161,6 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
   <div id="standings-list"><div class="alert-i">Head to <strong>Setup</strong> then run the <strong>Draft</strong>.</div></div>
 </div>
 
-<!-- FIELD -->
 <div id="tab-field" class="tc">
   <div class="fb mb1"><h2>Tournament Field</h2>
     <div class="flex" style="gap:.5rem">
@@ -177,12 +172,8 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
   <div id="field-list"><div class="muted">Select a tournament in Setup first.</div></div>
 </div>
 
-<!-- DRAFT -->
-<div id="tab-draft" class="tc">
-  <div id="draft-container"></div>
-</div>
+<div id="tab-draft" class="tc"><div id="draft-container"></div></div>
 
-<!-- SETUP -->
 <div id="tab-setup" class="tc">
   <h2 class="mb1">Tournament Setup</h2>
   <div class="card">
@@ -220,11 +211,7 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
       <button class="btn bp bsm" onclick="addP()">Add</button></div>
   </div>
   <div class="card">
-    <div class="fb mb1">
-      <h3>Draft Order</h3>
-      <button class="btn bs bsm" onclick="resetDraft()">Reset Draft</button>
-    </div>
-    <!-- Radio toggle -->
+    <div class="fb mb1"><h3>Draft Order</h3><button class="btn bs bsm" onclick="resetDraft()">Reset Draft</button></div>
     <div class="flex mb1" style="gap:1.5rem">
       <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;margin:0;text-transform:none;letter-spacing:0;font-size:.88rem;color:var(--txt)">
         <input type="radio" name="draft-mode" value="random" id="mode-random" onchange="onDraftModeChange()" style="width:auto;accent-color:var(--gl)" checked> 🔀 Randomized snake
@@ -233,15 +220,11 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
         <input type="radio" name="draft-mode" value="manual" id="mode-manual" onchange="onDraftModeChange()" style="width:auto;accent-color:var(--gl)"> ✏️ Manual order
       </label>
     </div>
-
-    <!-- Randomized mode -->
     <div id="draft-mode-random">
       <div class="muted sm mb1">Round 1 order shown. Snake reverses each round.</div>
       <button class="btn bp bsm mb1" onclick="randomizeDraftOrder()">🔀 Randomize Now</button>
       <ol class="order-list" id="order-list"></ol>
     </div>
-
-    <!-- Manual mode -->
     <div id="draft-mode-manual" style="display:none">
       <div class="muted sm mb1">Enter participant names in draft order. Snake still reverses each round.</div>
       <div id="manual-order-inputs"></div>
@@ -252,38 +235,31 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
   <button class="btn bg_ mt1" onclick="startDraft()" style="width:100%;padding:.65rem">Start Draft →</button>
 </div>
 
-<!-- HISTORY -->
 <div id="tab-history" class="tc">
   <div class="fb mb1"><h2>Past Tournaments</h2><span class="sm muted" id="hist-count"></span></div>
   <div id="history-list"><div class="muted">No past tournaments yet.</div></div>
 </div>
 
-<!-- SETTINGS -->
 <div id="tab-settings" class="tc">
   <h2 class="mb1">Settings</h2>
   <div class="card">
     <h3 class="mb1">Admin Mode</h3>
     <div class="muted sm mb1">Enter the admin password to unlock tournament and salary controls.</div>
-    <!-- Login form (shown when not admin) -->
     <div id="admin-login-wrap">
       <div style="display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:end;max-width:380px">
-        <div>
-          <label>Admin Password</label>
-          <input type="password" id="admin-pw-input" placeholder="Enter password…" onkeydown="if(event.key==='Enter')adminLogin()">
-        </div>
+        <div><label>Admin Password</label><input type="password" id="admin-pw-input" placeholder="Enter password…" onkeydown="if(event.key==='Enter')adminLogin()"></div>
         <button class="btn bp" onclick="adminLogin()" style="margin-bottom:0">Unlock</button>
       </div>
       <div id="admin-login-error" style="color:var(--rl);font-size:.8rem;margin-top:.4rem;display:none">Incorrect password.</div>
     </div>
-    <!-- Logged-in state (shown when admin) -->
     <div id="admin-loggedin-wrap" style="display:none">
       <div class="flex" style="gap:.75rem;flex-wrap:wrap">
         <span style="color:var(--gl);font-size:.88rem">🔓 Admin mode active</span>
         <button class="btn bs bsm" onclick="adminLogout()">Log out</button>
       </div>
-      <div class="mt1 g2" style="max-width:500px">
+      <div class="mt1" style="max-width:500px;display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:end">
         <div><label>Change Password</label><input type="password" id="admin-pw-new" placeholder="New password…"></div>
-        <div style="display:flex;align-items:flex-end"><button class="btn bs bsm" onclick="changeAdminPassword()" style="white-space:nowrap">Save Password</button></div>
+        <button class="btn bs bsm" onclick="changeAdminPassword()" style="white-space:nowrap">Save Password</button>
       </div>
       <div id="admin-pw-msg" class="sm muted mt1" style="display:none"></div>
     </div>
@@ -319,7 +295,7 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
   </div>
   <div class="admin-section" id="namemap-section" style="display:none">
     <h3 class="mb1">🔗 Name Mapping <span class="admin-badge">ADMIN ONLY</span></h3>
-    <div class="muted sm mb1">Map DraftKings names to ESPN names when they don't match exactly. Unmatched salaries won't link to live scores.</div>
+    <div class="muted sm mb1">Map DraftKings names to ESPN names when they don't match exactly.</div>
     <div id="namemap-unmatched-wrap" style="margin-bottom:.75rem"></div>
     <div id="namemap-saved-wrap"></div>
     <div class="flex mt1" style="gap:.5rem;flex-wrap:wrap">
@@ -331,17 +307,11 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
       <div style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:.5rem;align-items:end">
         <div><label>DraftKings Name</label><input type="text" id="map-dk-input" placeholder="e.g. R. McIlroy"></div>
         <div class="map-arrow" style="margin-top:1.2rem">→</div>
-        <div><label>ESPN Name</label>
-          <select id="map-espn-input">
-            <option value="">-- Select ESPN name --</option>
-            ${/* populated dynamically */''}
-          </select>
-        </div>
+        <div><label>ESPN Name</label><select id="map-espn-input"><option value="">-- Select ESPN name --</option></select></div>
         <button class="btn bp bsm" onclick="saveManualMap()" style="margin-top:1.1rem">Save</button>
       </div>
     </div>
   </div>
-
   <div class="admin-section" id="archive-section" style="display:none">
     <h3 class="mb1">🏆 Archive Tournament <span class="admin-badge">ADMIN ONLY</span></h3>
     <div class="muted sm mb1">Archive completed tournament to history.</div>
@@ -369,128 +339,85 @@ let S={
 const SUPA_URL='https://qzmiyusbicdwfgefbvxu.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6bWl5dXNiaWNkd2ZnZWZidnh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2Mzc5NjcsImV4cCI6MjA5NzIxMzk2N30.6f1_-gPc-4LWwnVYnSd1gqxBHpLDm8VDnQV9FwfL4Kc';
 
-// ── Supabase sync ──────────────────────────────────
 let _saveTimer=null;
-let _syncStatus='';
-
 function setSyncStatus(s){
-  _syncStatus=s;
-  const el=document.getElementById('sync-status');
-  if(!el)return;
+  const el=document.getElementById('sync-status');if(!el)return;
   const map={saving:'⟳ Saving…',saved:'✓ Synced',error:'⚠ Sync error'};
   const col={saving:'var(--txt3)',saved:'var(--gl)',error:'var(--rl)'};
-  el.textContent=map[s]||'';
-  el.style.color=col[s]||'var(--txt3)';
+  el.textContent=map[s]||'';el.style.color=col[s]||'var(--txt3)';
 }
-
 async function supaLoad(){
   try{
-    const r=await fetch(SUPA_URL+'/rest/v1/pool_state?id=eq.main&select=data',{
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
-    });
+    const r=await fetch(SUPA_URL+'/rest/v1/pool_state?id=eq.main&select=data',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
     const rows=await r.json();
     if(rows&&rows[0]&&rows[0].data&&Object.keys(rows[0].data).length){
-      const remote=rows[0].data;
-      const wasAdmin=S.isAdmin;
-      S=Object.assign(S,remote);
-      S.isAdmin=wasAdmin;
-      S.scores={};S.field=[];
+      const remote=rows[0].data;const wasAdmin=S.isAdmin;
+      S=Object.assign(S,remote);S.isAdmin=wasAdmin;S.scores={};S.field=[];
     }
   }catch(e){console.error('Supabase load error',e);}
 }
-
 async function supaSave(){
   setSyncStatus('saving');
   const toSave=Object.assign({},S);
   delete toSave.scores;delete toSave.field;delete toSave.isAdmin;
   try{
-    const r=await fetch(SUPA_URL+'/rest/v1/pool_state?id=eq.main',{
-      method:'PATCH',
+    const r=await fetch(SUPA_URL+'/rest/v1/pool_state?id=eq.main',{method:'PATCH',
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({data:toSave,updated_at:new Date().toISOString()})
-    });
-    if(r.ok){setSyncStatus('saved');}
-    else{setSyncStatus('error');console.error('Supabase save error',r.status);}
+      body:JSON.stringify({data:toSave,updated_at:new Date().toISOString()})});
+    if(r.ok)setSyncStatus('saved');else{setSyncStatus('error');console.error('Supabase save error',r.status);}
   }catch(e){setSyncStatus('error');console.error('Supabase save error',e);}
 }
-
 function save(){
   try{localStorage.setItem('gp_pool',JSON.stringify(S));}catch(e){}
   if(_saveTimer)clearTimeout(_saveTimer);
   _saveTimer=setTimeout(()=>supaSave(),800);
 }
-
-function load(){
-  try{const s=localStorage.getItem('gp_pool');if(s)S=Object.assign(S,JSON.parse(s));}catch(e){}
-}
-
+function load(){try{const s=localStorage.getItem('gp_pool');if(s)S=Object.assign(S,JSON.parse(s));}catch(e){}}
 async function clearAll(){
   if(!confirm('Reset ALL data including history for EVERYONE?'))return;
-  S=Object.assign(S,{
-    tournament:null,tournId:null,
+  S=Object.assign(S,{tournament:null,tournId:null,
     participants:['Mike','Dani','Nick','Kenzy','Logan','Scott','Andrew','Jana','Chris','Bryan','Jace'],
     draftOrder:null,picks:{},draftLog:[],draftComplete:false,currentDraftSlot:0,
-    field:[],scores:{},salaries:{},nameMap:{},history:[],
-    fee:10,cap:50000,cutMin:4,cutOfficial:false,maxPick:2
-  });
-  localStorage.removeItem('gp_pool');
-  await supaSave();
-  location.reload();
+    field:[],scores:{},salaries:{},nameMap:{},manualCuts:{},history:[],
+    fee:10,cap:50000,cutMin:4,cutOfficial:false,cutlineScore:null,maxPick:2});
+  localStorage.removeItem('gp_pool');await supaSave();location.reload();
 }
-
 function startSync(){
   setInterval(async()=>{
     if(document.hidden)return;
-    await supaLoad();
-    renderStandings();renderBanner();
+    await supaLoad();renderStandings();renderBanner();
     if(S.field&&S.field.length){renderFieldTab();renderFieldTable();}
   },30000);
 }
-
 function showTab(t,el){
   document.querySelectorAll('.tc').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nt').forEach(x=>x.classList.remove('active'));
-  document.getElementById('tab-'+t).classList.add('active');
-  if(el)el.classList.add('active');
-  if(t==='standings')renderStandings();
-  if(t==='field')renderFieldTab();
-  if(t==='draft')renderDraft();
-  if(t==='setup')renderSetup();
-  if(t==='history')renderHistory();
+  document.getElementById('tab-'+t).classList.add('active');if(el)el.classList.add('active');
+  if(t==='standings')renderStandings();if(t==='field')renderFieldTab();
+  if(t==='draft')renderDraft();if(t==='setup')renderSetup();if(t==='history')renderHistory();
 }
+function s2n(s){if(!s||s==='E'||s==='-')return 0;const n=parseInt(s.replace('+',''));return isNaN(n)?0:n;}
+function sbadge(s){if(!s||s==='-')return'<span class="sc sce">-</span>';const n=s2n(s);return'<span class="sc '+(n<0?'scu':n>0?'sco':'sce')+'">'+s+'</span>';}
 
 // ── Snake helpers ──────────────────────────────────
 function buildSnakeSeq(order){
   const n=order.length,total=n*6,seq=[];
-  for(let i=0;i<total;i++){
-    const r=Math.floor(i/n),pos=i%n;
-    const idx=r%2===0?pos:(n-1-pos);
-    seq.push({participant:order[idx],round:r+1,overall:i+1});
-  }
+  for(let i=0;i<total;i++){const r=Math.floor(i/n),pos=i%n;const idx=r%2===0?pos:(n-1-pos);seq.push({participant:order[idx],round:r+1,overall:i+1});}
   return seq;
 }
-function getPickCounts(){
-  const c={};
-  Object.values(S.picks).forEach(arr=>(arr||[]).forEach(g=>{if(g)c[g]=(c[g]||0)+1;}));
-  return c;
-}
+function getPickCounts(){const c={};Object.values(S.picks).forEach(arr=>(arr||[]).forEach(g=>{if(g)c[g]=(c[g]||0)+1;}));return c;}
 function getSpend(p){return(S.picks[p]||[]).filter(x=>x).reduce((s,g)=>s+(Number(S.salaries[g])||0),0);}
 function hasSalaries(){return Object.keys(S.salaries).length>0;}
 function affordableGolfers(participant,excludeSlot=-1){
   const cap=S.cap||50000;const pickCounts=getPickCounts();
   const curPicks=(S.picks[participant]||[]).filter((g,i)=>g&&i!==excludeSlot);
-  const spent=curPicks.reduce((s,g)=>s+(Number(S.salaries[g])||0),0);
-  const budget=cap-spent;
-  const allNames=[...new Set([...S.field.map(f=>f.name),...Object.keys(S.salaries)])];
-  const maxPick=S.maxPick||2;
+  const spent=curPicks.reduce((s,g)=>s+(Number(S.salaries[g])||0),0);const budget=cap-spent;
+  const allNames=[...new Set([...S.field.map(f=>f.name),...Object.keys(S.salaries)])];const maxPick=S.maxPick||2;
   return allNames.filter(n=>{
-    const sal=Number(S.salaries[n])||0;
-    const cnt=pickCounts[n]||0;
+    const sal=Number(S.salaries[n])||0;const cnt=pickCounts[n]||0;
     const alreadyPickedByMe=(S.picks[participant]||[]).some((g,i)=>g===n&&i!==excludeSlot);
     const effectiveCnt=alreadyPickedByMe?cnt-1:cnt;
-    if(effectiveCnt>=maxPick)return false;
-    if(hasSalaries()&&sal>budget)return false;
-    return true;
+    if(effectiveCnt>=maxPick)return false;if(hasSalaries()&&sal>budget)return false;return true;
   });
 }
 function hasValidPick(participant){return affordableGolfers(participant).length>0;}
@@ -498,11 +425,9 @@ function hasValidPick(participant){return affordableGolfers(participant).length>
 // ── Draft ──────────────────────────────────────────
 function renderDraft(){
   const el=document.getElementById('draft-container');
-  if(!S.draftOrder||!S.draftOrder.length){
-    el.innerHTML=`<div class="alert-i">Go to <strong>Setup</strong>, add participants, randomize order, then click <strong>Start Draft</strong>.</div>`;return;}
+  if(!S.draftOrder||!S.draftOrder.length){el.innerHTML='<div class="alert-i">Go to <strong>Setup</strong>, add participants, randomize order, then click <strong>Start Draft</strong>.</div>';return;}
   if(S.draftComplete){renderDraftComplete(el);return;}
-  const seq=buildSnakeSeq(S.draftOrder);
-  const slot=S.currentDraftSlot||0;
+  const seq=buildSnakeSeq(S.draftOrder);const slot=S.currentDraftSlot||0;
   if(slot>=seq.length){S.draftComplete=true;save();renderDraftComplete(el);return;}
   const current=seq[slot];const p=current.participant;
   const cap=S.cap||50000;const spend=getSpend(p);const remaining=cap-spend;
@@ -514,7 +439,7 @@ function renderDraft(){
   const allNames=[...new Set([...S.field.map(f=>f.name),...Object.keys(S.salaries)])].sort((a,b)=>(S.salaries[b]||0)-(S.salaries[a]||0));
   function golferOption(n,excludeSlot=-1){
     const cnt=pickCounts[n]||0;const sal=S.salaries[n]?'$'+Number(S.salaries[n]).toLocaleString():'';
-    const sc=S.scores[n];const scStr=sc&&sc.score&&sc.score!=='E'?` ${sc.score}`:'';
+    const sc=S.scores[n];const scStr=sc&&sc.score&&sc.score!=='E'?' '+sc.score:'';
     const alreadyPickedByMe=(S.picks[p]||[]).some((g,i)=>g===n&&i!==excludeSlot);
     const effectiveCnt=alreadyPickedByMe?cnt-1:cnt;const atMax=effectiveCnt>=maxPick;
     const curPicks=(S.picks[p]||[]).filter((g,i)=>g&&i!==excludeSlot);
@@ -522,136 +447,94 @@ function renderDraft(){
     const wouldOver=hasSal&&S.salaries[n]&&(altSpend+Number(S.salaries[n]))>cap;
     let lbl=n+(sal?' · '+sal:'')+scStr;let dis=false;
     if(atMax){lbl+=' (max reached)';dis=true;}else if(wouldOver){lbl+=' ⚠ over budget';dis=true;}
-    return`<option value="${n}" ${dis?'disabled':''} style="${atMax?'color:#666':wouldOver?'color:#e74c3c':''}">${lbl}</option>`;
+    return'<option value="'+n+'" '+(dis?'disabled':'')+' style="'+(atMax?'color:#666':wouldOver?'color:#e74c3c':'')+'">'+lbl+'</option>';
   }
   const curPickArr=(S.picks[p]||[]).filter(x=>x);
-  el.innerHTML=`
-  <div class="draft-wrap">
-    <div class="draft-header">
-      <div class="draft-title">Snake Draft</div>
-      <div class="draft-round-info">Round ${current.round} · Pick ${current.overall} of ${seq.length} · ${seq.length-slot} remaining</div>
-    </div>
-    <div class="on-clock">
-      <div class="sm muted mb05">On the clock</div>
+  el.innerHTML=`<div class="draft-wrap">
+    <div class="draft-header"><div class="draft-title">Snake Draft</div>
+      <div class="draft-round-info">Round ${current.round} · Pick ${current.overall} of ${seq.length} · ${seq.length-slot} remaining</div></div>
+    <div class="on-clock"><div class="sm muted mb05">On the clock</div>
       <div class="on-clock-name">${p}</div>
-      <div class="on-clock-meta">Pick ${(S.picks[p]||[]).filter(x=>x).length+1} of 6</div>
-    </div>
+      <div class="on-clock-meta">Pick ${(S.picks[p]||[]).filter(x=>x).length+1} of 6</div></div>
     ${hasSal?`<div class="budget-bar-row">
-      <div class="sal-bar-wrap"><div class="sal-bar ${barCls}" style="width:${pct}%"></div></div>
+      <div style="height:6px;background:var(--bdr);border-radius:3px;overflow:hidden;flex:1"><div class="sal-bar ${barCls}" style="width:${pct}%"></div></div>
       <span class="budget-amt" style="color:${remaining<0?'var(--rl)':'var(--txt2)'}">$${spend.toLocaleString()} / $${cap.toLocaleString()}</span>
       <span class="budget-label" style="color:${remaining<0?'var(--rl)':'var(--txt3)'}">${remaining>=0?'($'+remaining.toLocaleString()+' left)':'(OVER)'}</span>
     </div>`:''}
-    ${stuck?`<div class="alert-r" style="margin:0 1rem .75rem">⚠ <strong>${p} is over budget</strong> — use the swap tool below to free up budget.</div>`:''}
+    ${stuck?`<div class="alert-r" style="margin:0 1rem .75rem">⚠ <strong>${p} is over budget</strong> — use the swap tool below.</div>`:''}
     ${!stuck?`<div class="pick-panel"><div class="pick-row">
       <div><label>Select golfer for ${p}</label>
-        <select id="draft-pick-sel" style="font-size:.85rem">
-          <option value="">-- Choose a golfer --</option>
-          ${allNames.map(n=>golferOption(n)).join('')}
-        </select></div>
+        <select id="draft-pick-sel" style="font-size:.85rem"><option value="">-- Choose a golfer --</option>${allNames.map(n=>golferOption(n)).join('')}</select></div>
       <button class="btn bp" onclick="confirmPick()" style="white-space:nowrap;margin-top:1.1rem">Confirm Pick ✓</button>
     </div></div>`:''}
-    ${curPickArr.length>0?`
-    <div class="swap-panel" id="swap-panel" style="${stuck?'':'display:none'}">
+    ${curPickArr.length>0?`<div class="swap-panel" id="swap-panel" style="${stuck?'':'display:none'}">
       <h4>${stuck?'⚡ Swap a Previous Pick':'↔ Swap a Previous Pick'}</h4>
-      <div class="sm muted mb1">${stuck?'Replace a pick with a cheaper golfer to free up budget.':'Swap one of your existing picks.'}</div>
-      <div class="swap-row" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);font-weight:500">
-        <div>Remove</div><div>Replace with</div><div></div>
-      </div>
-      ${curPickArr.map((g,i)=>{
-        const gSal=S.salaries[g]?'$'+Number(S.salaries[g]).toLocaleString():'';
-        return`<div class="swap-row" style="margin-bottom:.5rem">
-          <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:5px;padding:.35rem .6rem;font-size:.82rem">${g}${gSal?` <span style="color:var(--gold);font-family:var(--fm);font-size:.75rem">${gSal}</span>`:''}</div>
-          <select id="swap-new-${i}" style="font-size:.78rem">
-            <option value="">-- New golfer --</option>
-            ${allNames.map(n=>golferOption(n,i)).join('')}
-          </select>
-          <button class="btn bp bsm" onclick="doSwap(${i})" style="white-space:nowrap">Swap</button>
-        </div>`;
-      }).join('')}
-    </div>
-    ${!stuck?`<div style="padding:0 1rem .75rem;text-align:right"><button class="btn bs bsm" onclick="toggleSwap()">↔ Swap a previous pick</button></div>`:''}
-    `:''}
-    <div class="draft-queue">
-      <span class="sm muted" style="margin-right:.25rem">Up next:</span>
-      ${upcoming.map((u,i)=>`<span class="dq-item ${i===0?'next':''}">${u.participant} <span style="opacity:.5">R${u.round}</span></span>`).join('')}
+      <div class="sm muted mb1">${stuck?'Replace a pick with a cheaper golfer.':'Swap one of your existing picks.'}</div>
+      <div class="swap-row" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);font-weight:500"><div>Remove</div><div>Replace with</div><div></div></div>
+      ${curPickArr.map((g,i)=>{const gSal=S.salaries[g]?'$'+Number(S.salaries[g]).toLocaleString():'';
+        return'<div class="swap-row" style="margin-bottom:.5rem"><div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:5px;padding:.35rem .6rem;font-size:.82rem">'+g+(gSal?' <span style="color:var(--gold);font-family:var(--fm);font-size:.75rem">'+gSal+'</span>':'')+'</div>'
+        +'<select id="swap-new-'+i+'" style="font-size:.78rem"><option value="">-- New golfer --</option>'+allNames.map(n=>golferOption(n,i)).join('')+'</select>'
+        +'<button class="btn bp bsm" onclick="doSwap('+i+')" style="white-space:nowrap">Swap</button></div>';}).join('')}
+    </div>${!stuck?'<div style="padding:0 1rem .75rem;text-align:right"><button class="btn bs bsm" onclick="toggleSwap()">↔ Swap a previous pick</button></div>':''}`:``}
+    <div class="draft-queue"><span class="sm muted" style="margin-right:.25rem">Up next:</span>
+      ${upcoming.map((u,i)=>'<span class="dq-item '+(i===0?'next':'')+'">'+u.participant+' <span style="opacity:.5">R'+u.round+'</span></span>').join('')}
       ${upcoming.length===0?'<span class="sm muted">Almost done!</span>':''}
-    </div>
-  </div>
+    </div></div>
   <div class="draft-board">${renderDraftBoard(seq,slot)}</div>
   <button class="btn bd bsm mt1" onclick="undoLastPick()" ${slot===0?'disabled':''}>↩ Undo Last Pick</button>`;
 }
-
 function toggleSwap(){const p=document.getElementById('swap-panel');if(p)p.style.display=p.style.display==='none'?'block':'none';}
-
 function doSwap(pickIdx){
   const seq=buildSnakeSeq(S.draftOrder);const p=seq[S.currentDraftSlot||0].participant;
-  const newSel=document.getElementById('swap-new-'+pickIdx);const newGolfer=newSel?.value;
+  const newSel=document.getElementById('swap-new-'+pickIdx);const newGolfer=newSel&&newSel.value;
   if(!newGolfer){alert('Please select a replacement golfer.');return;}
   const oldGolfer=(S.picks[p]||[])[pickIdx];
   const curPicks=(S.picks[p]||[]).map((g,i)=>i===pickIdx?newGolfer:g).filter(x=>x);
   const newSpend=curPicks.reduce((s,g)=>s+(Number(S.salaries[g])||0),0);
-  if(hasSalaries()&&newSpend>(S.cap||50000)){alert(`Still over budget after swap ($${newSpend.toLocaleString()}). Try a cheaper golfer.`);return;}
-  if(!S.picks[p])S.picks[p]=[];
-  S.picks[p][pickIdx]=newGolfer;
+  if(hasSalaries()&&newSpend>(S.cap||50000)){alert('Still over budget after swap. Try a cheaper golfer.');return;}
+  if(!S.picks[p])S.picks[p]=[];S.picks[p][pickIdx]=newGolfer;
   S.draftLog.push({slot:'swap',round:'swap',participant:p,golfer:newGolfer,swappedOut:oldGolfer,swapIdx:pickIdx});
   save();renderDraft();
 }
-
 function confirmPick(){
-  const sel=document.getElementById('draft-pick-sel');const golfer=sel?.value;
+  const sel=document.getElementById('draft-pick-sel');const golfer=sel&&sel.value;
   if(!golfer){alert('Please select a golfer.');return;}
   const seq=buildSnakeSeq(S.draftOrder);const slot=S.currentDraftSlot||0;const current=seq[slot];if(!current)return;
   const p=current.participant;const spend=getSpend(p);const sal=Number(S.salaries[golfer])||0;
-  if(hasSalaries()&&(spend+sal)>(S.cap||50000)){alert(`Over budget! This pick would put ${p} $${(spend+sal-(S.cap||50000)).toLocaleString()} over the cap.`);return;}
-  if(!S.picks[p])S.picks[p]=[];
-  S.picks[p].push(golfer);
+  if(hasSalaries()&&(spend+sal)>(S.cap||50000)){alert('Over budget! This pick would put '+p+' $'+(spend+sal-(S.cap||50000)).toLocaleString()+' over the cap.');return;}
+  if(!S.picks[p])S.picks[p]=[];S.picks[p].push(golfer);
   S.draftLog.push({slot,round:current.round,participant:p,golfer});
-  S.currentDraftSlot=(slot+1);
-  if(S.currentDraftSlot>=seq.length)S.draftComplete=true;
+  S.currentDraftSlot=(slot+1);if(S.currentDraftSlot>=seq.length)S.draftComplete=true;
   save();renderDraft();
 }
-
 function undoLastPick(){
-  if(!S.draftLog||!S.draftLog.length)return;
-  const last=S.draftLog.pop();
+  if(!S.draftLog||!S.draftLog.length)return;const last=S.draftLog.pop();
   if(last.slot==='swap'){if(!S.picks[last.participant])return;S.picks[last.participant][last.swapIdx]=last.swappedOut;}
   else{const arr=S.picks[last.participant]||[];const idx=arr.lastIndexOf(last.golfer);if(idx>-1)arr.splice(idx,1);S.picks[last.participant]=arr;S.currentDraftSlot=Math.max(0,(S.currentDraftSlot||1)-1);}
   S.draftComplete=false;save();renderDraft();
 }
-
 function renderDraftBoard(seq,currentSlot){
-  const order=S.draftOrder;const cols=order.length;
-  const colW=`40px repeat(${cols},minmax(80px,1fr))`;
-  let html=`<div class="db-row header-row" style="grid-template-columns:${colW}"><div class="db-cell">Rd</div>
-    ${order.map(p=>`<div class="db-cell" title="${p}" style="font-size:.62rem">${p.length>6?p.substring(0,6)+'…':p}</div>`).join('')}</div>`;
+  const order=S.draftOrder;const cols=order.length;const colW='40px repeat('+cols+',minmax(80px,1fr))';
+  let html='<div class="db-row header-row" style="grid-template-columns:'+colW+'"><div class="db-cell">Rd</div>'+order.map(p=>'<div class="db-cell" title="'+p+'" style="font-size:.62rem">'+(p.length>6?p.substring(0,6)+'…':p)+'</div>').join('')+'</div>';
   for(let r=1;r<=6;r++){
     const rowSeq=seq.filter(s=>s.round===r);const isCur=rowSeq.some(s=>s.overall===currentSlot+1);
-    html+=`<div class="db-row ${isCur?'current-round':''}" style="grid-template-columns:${colW}">
-      <div class="db-cell" style="color:var(--txt3);font-family:var(--fm);font-size:.72rem">R${r}<span class="snake-dir">${r%2===0?'↑':'↓'}</span></div>
-      ${order.map(p=>{const g=(S.picks[p]||[])[r-1]||null;const sal=g&&S.salaries[g]?'$'+Number(S.salaries[g]).toLocaleString():'';
-        return`<div class="db-cell" style="color:${g?'var(--txt)':'var(--txt3)'}">${g||'<span style="opacity:.2">—</span>'}${sal?`<br><span style="font-size:.62rem;color:var(--gold);font-family:var(--fm)">${sal}</span>`:''}</div>`;}).join('')}
-    </div>`;
+    html+='<div class="db-row '+(isCur?'current-round':'')+'" style="grid-template-columns:'+colW+'">'
+      +'<div class="db-cell" style="color:var(--txt3);font-family:var(--fm);font-size:.72rem">R'+r+'<span class="snake-dir">'+(r%2===0?'↑':'↓')+'</span></div>'
+      +order.map(p=>{const g=(S.picks[p]||[])[r-1]||null;const sal=g&&S.salaries[g]?'$'+Number(S.salaries[g]).toLocaleString():'';
+        return'<div class="db-cell" style="color:'+(g?'var(--txt)':'var(--txt3)')+'">'+( g||'<span style="opacity:.2">—</span>')+(sal?'<br><span style="font-size:.62rem;color:var(--gold);font-family:var(--fm)">'+sal+'</span>':'')+'</div>';}).join('')+'</div>';
   }
   return html;
 }
-
 function renderDraftComplete(el){
-  el.innerHTML=`<div class="draft-wrap">
-    <div class="draft-header"><div class="draft-title">Draft Complete 🏆</div>
-      <div class="draft-round-info">All ${(S.draftOrder||[]).length*6} picks made</div></div>
-    <div style="padding:1rem 1.25rem">
-      <div class="alert-i mb1">Draft locked. Head to <strong>Standings</strong> to track the competition.</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.65rem">
-        ${(S.draftOrder||[]).map(p=>{const ps=(S.picks[p]||[]).filter(x=>x);const spend=getSpend(p);const hasSal=hasSalaries();
-          return`<div class="card" style="margin:0"><div style="font-family:var(--fd);font-size:1rem;letter-spacing:1px;margin-bottom:.5rem">${p}</div>
-            ${ps.map(g=>{const sal=S.salaries[g]?'<span style="color:var(--gold);font-size:.7rem;font-family:var(--fm)"> $'+Number(S.salaries[g]).toLocaleString()+'</span>':'';return`<div style="font-size:.8rem;padding:.15rem 0;border-bottom:1px solid rgba(45,90,61,.2)">${g}${sal}</div>`;}).join('')}
-            ${hasSal?`<div style="font-size:.75rem;color:var(--txt3);margin-top:.4rem">Total: <span style="color:var(--gold);font-family:var(--fm)">$${spend.toLocaleString()}</span></div>`:''}
-          </div>`;}).join('')}
-      </div>
-      <button class="btn bd bsm mt2" onclick="if(confirm('Reset draft?'))resetDraft()">Reset Draft</button>
-    </div>
-    <div class="draft-board" style="margin:0 1rem 1rem">${renderDraftBoard(buildSnakeSeq(S.draftOrder),9999)}</div>
-  </div>`;
+  el.innerHTML='<div class="draft-wrap"><div class="draft-header"><div class="draft-title">Draft Complete 🏆</div><div class="draft-round-info">All '+((S.draftOrder||[]).length*6)+' picks made</div></div>'
+    +'<div style="padding:1rem 1.25rem"><div class="alert-i mb1">Draft locked. Head to <strong>Standings</strong>.</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.65rem">'
+    +(S.draftOrder||[]).map(p=>{const ps=(S.picks[p]||[]).filter(x=>x);const spend=getSpend(p);const hasSal=hasSalaries();
+      return'<div class="card" style="margin:0"><div style="font-family:var(--fd);font-size:1rem;letter-spacing:1px;margin-bottom:.5rem">'+p+'</div>'
+        +ps.map(g=>'<div style="font-size:.8rem;padding:.15rem 0;border-bottom:1px solid rgba(45,90,61,.2)">'+g+(S.salaries[g]?'<span style="color:var(--gold);font-size:.7rem;font-family:var(--fm)"> $'+Number(S.salaries[g]).toLocaleString()+'</span>':'')+'</div>').join('')
+        +(hasSal?'<div style="font-size:.75rem;color:var(--txt3);margin-top:.4rem">Total: <span style="color:var(--gold);font-family:var(--fm)">$'+spend.toLocaleString()+'</span></div>':'')+'</div>';}).join('')
+    +'</div><button class="btn bd bsm mt2" onclick="if(confirm(\'Reset draft?\'))resetDraft()">Reset Draft</button></div>'
+    +'<div class="draft-board" style="margin:0 1rem 1rem">'+renderDraftBoard(buildSnakeSeq(S.draftOrder),9999)+'</div></div>';
 }
 
 // ── Setup ──────────────────────────────────────────
@@ -664,7 +547,7 @@ function renderSetup(){
   document.getElementById('draft-mode-manual').style.display=isManual?'block':'none';
   if(isManual)renderManualOrderInputs();
   const lt=document.getElementById('tourn-locked-text');
-  if(lt)lt.innerHTML=S.tournament?`<strong style="color:var(--txt)">${S.tournament.name}</strong><br><span class="muted">${S.tournament.venue||''}${S.tournament.date?' · '+new Date(S.tournament.date).toLocaleDateString():''}</span>`:'No tournament selected. Admin must set it.';
+  if(lt)lt.innerHTML=S.tournament?'<strong style="color:var(--txt)">'+S.tournament.name+'</strong><br><span class="muted">'+(S.tournament.venue||'')+(S.tournament.date?' · '+new Date(S.tournament.date).toLocaleDateString():'')+'</span>':'No tournament selected. Admin must set it.';
   if(S.isAdmin)fetchSchedule();
 }
 function randomizeDraftOrder(){
@@ -681,45 +564,29 @@ function startDraft(){
   document.querySelectorAll('.nt').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.tc').forEach(x=>x.classList.remove('active'));
   document.getElementById('tab-draft').classList.add('active');
-  document.querySelectorAll('.nt')[2].classList.add('active');
-  renderDraft();
+  document.querySelectorAll('.nt')[2].classList.add('active');renderDraft();
 }
 function renderOrderList(){
   const el=document.getElementById('order-list');if(!el)return;
   const order=S.draftOrder||S.participants;
-  el.innerHTML=order.map(p=>`<li><span>${p}</span></li>`).join('');
+  el.innerHTML=order.map(p=>'<li><span>'+p+'</span></li>').join('');
 }
-
 function onDraftModeChange(){
   const isManual=document.getElementById('mode-manual').checked;
   document.getElementById('draft-mode-random').style.display=isManual?'none':'block';
   document.getElementById('draft-mode-manual').style.display=isManual?'block':'none';
-  if(isManual)renderManualOrderInputs();
-  S.draftMode=isManual?'manual':'random';
-  save();
+  if(isManual)renderManualOrderInputs();S.draftMode=isManual?'manual':'random';save();
 }
-
 function renderManualOrderInputs(){
   const el=document.getElementById('manual-order-inputs');if(!el)return;
   const current=S.draftOrder||S.participants;
-  el.innerHTML=current.map((p,i)=>`
-    <div class="flex mb05" style="gap:.5rem">
-      <span class="sm muted" style="width:20px;text-align:right;flex-shrink:0">${i+1}</span>
-      <input type="text" value="${p}" id="manual-p-${i}" placeholder="Participant name..." style="flex:1;font-size:.85rem">
-    </div>`).join('');
+  el.innerHTML=current.map((p,i)=>'<div class="flex mb05" style="gap:.5rem"><span class="sm muted" style="width:20px;text-align:right;flex-shrink:0">'+(i+1)+'</span><input type="text" value="'+p+'" id="manual-p-'+i+'" placeholder="Participant name..." style="flex:1;font-size:.85rem"></div>').join('');
 }
-
 function saveManualOrder(){
-  const current=S.draftOrder||S.participants;
-  const newOrder=[];
-  for(let i=0;i<current.length;i++){
-    const inp=document.getElementById('manual-p-'+i);
-    const val=inp?inp.value.trim():'';
-    if(val)newOrder.push(val);
-  }
+  const current=S.draftOrder||S.participants;const newOrder=[];
+  for(let i=0;i<current.length;i++){const inp=document.getElementById('manual-p-'+i);const val=inp?inp.value.trim():'';if(val)newOrder.push(val);}
   if(newOrder.length===0){alert('Please enter at least one name.');return;}
-  S.draftOrder=newOrder;
-  save();
+  S.draftOrder=newOrder;save();
   const msg=document.getElementById('manual-order-msg');
   if(msg){msg.style.display='block';msg.textContent='✓ Order saved: '+newOrder.join(' → ');setTimeout(()=>{msg.style.display='none';},4000);}
   renderOrderList();
@@ -729,102 +596,82 @@ function onTournSel(){
   S.tournId=o.value;S.tournament={name:o.dataset.name,venue:o.dataset.venue,date:o.dataset.date,status:o.dataset.status};
   updateTournDetail(o);
   const lt=document.getElementById('tourn-locked-text');
-  if(lt)lt.innerHTML=`<strong style="color:var(--txt)">${S.tournament.name}</strong><br><span class="muted">${S.tournament.venue||''}${S.tournament.date?' · '+new Date(S.tournament.date).toLocaleDateString():''}</span>`;
+  if(lt)lt.innerHTML='<strong style="color:var(--txt)">'+S.tournament.name+'</strong><br><span class="muted">'+(S.tournament.venue||'')+(S.tournament.date?' · '+new Date(S.tournament.date).toLocaleDateString():'')+'</span>';
   save();fetchField();
 }
 function updateTournDetail(o){
   const el=document.getElementById('tourn-detail');if(!el||!o)return;
-  el.innerHTML=`📍 ${o.dataset.venue||''} &nbsp;·&nbsp; ${o.dataset.date?new Date(o.dataset.date).toLocaleDateString():''} &nbsp;·&nbsp; <span style="color:var(--gold)">${o.dataset.status||''}</span>`;
+  el.innerHTML='📍 '+(o.dataset.venue||'')+' &nbsp;·&nbsp; '+(o.dataset.date?new Date(o.dataset.date).toLocaleDateString():'')+' &nbsp;·&nbsp; <span style="color:var(--gold)">'+(o.dataset.status||'')+'</span>';
 }
 async function fetchSchedule(){
   const sel=document.getElementById('tourn-sel');if(!sel)return;
   sel.innerHTML='<option>Loading...</option>';
   try{
     const r=await fetch(ESPN);const d=await r.json();
-    const calendar=(d.leagues?.[0]?.calendar||[]);
+    const calendar=(d.leagues&&d.leagues[0]&&d.leagues[0].calendar)||[];
     const currentEvents=d.events||[];
     sel.innerHTML='<option value="">-- Select tournament --</option>';
     calendar.sort((a,b)=>new Date(a.startDate)-new Date(b.startDate));
     calendar.forEach(e=>{
-      const o=document.createElement('option');
-      o.value=e.id;o.dataset.name=e.label||'';o.dataset.date=e.startDate||'';
+      const o=document.createElement('option');o.value=e.id;o.dataset.name=e.label||'';o.dataset.date=e.startDate||'';
       const live=currentEvents.find(ev=>ev.id===e.id);
-      o.dataset.status=live?live.status?.type?.description||'In Progress':'';
-      o.dataset.venue=live?live.competitions?.[0]?.venue?.fullName||'':'';
+      o.dataset.status=live?(live.status&&live.status.type&&live.status.type.description)||'In Progress':'';
+      o.dataset.venue=live?(live.competitions&&live.competitions[0]&&live.competitions[0].venue&&live.competitions[0].venue.fullName)||'':'';
       o.textContent=(e.label||'Event')+' — '+(e.startDate?new Date(e.startDate).toLocaleDateString():'');
       sel.appendChild(o);
     });
     if(currentEvents.length&&!S.tournId){
-      const cur=currentEvents[0];
-      sel.value=cur.id;S.tournId=cur.id;
-      S.tournament={name:cur.name||'',venue:cur.competitions?.[0]?.venue?.fullName||'',date:cur.date||'',status:cur.status?.type?.description||''};
+      const cur=currentEvents[0];sel.value=cur.id;S.tournId=cur.id;
+      S.tournament={name:cur.name||'',venue:(cur.competitions&&cur.competitions[0]&&cur.competitions[0].venue&&cur.competitions[0].venue.fullName)||'',date:cur.date||'',status:(cur.status&&cur.status.type&&cur.status.type.description)||''};
       updateTournDetail(sel.selectedOptions[0]);save();fetchField();
     } else if(S.tournId){sel.value=S.tournId;updateTournDetail(sel.selectedOptions[0]);}
   }catch(err){sel.innerHTML='<option value="">-- Could not load --</option>';console.error(err);}
 }
 async function fetchField(){
   try{
-    let players=[];
-    let evInfo=null;
-
+    let players=[];let evInfo=null;
     if(S.tournId){
       try{
         const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard?event='+S.tournId);
-        const d=await r.json();
-        const ev=d.events&&d.events[0];
+        const d=await r.json();const ev=d.events&&d.events[0];
         if(ev&&ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors&&ev.competitions[0].competitors.length>0){
           players=ev.competitions[0].competitors;
           evInfo={name:ev.name||'',venue:(ev.competitions[0].venue&&ev.competitions[0].venue.fullName)||'',date:ev.date||'',status:(ev.status&&ev.status.type&&ev.status.type.description)||''};
         }
       }catch(e){console.log('Specific event fetch failed, falling back to scoreboard');}
     }
-
     let currentEv=null;
     if(players.length===0){
-      const r=await fetch(ESPN);const d=await r.json();
-      const events=d.events||[];
+      const r=await fetch(ESPN);const d=await r.json();const events=d.events||[];
       let ev=S.tournId?events.find(function(e){return e.id===S.tournId;}):null;
-      if(!ev)ev=events[0];
-      if(!ev){console.warn('No event found');return;}
-      currentEv=ev;
-      players=(ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors)||[];
+      if(!ev)ev=events[0];if(!ev){console.warn('No event found');return;}
+      currentEv=ev;players=(ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors)||[];
       evInfo={name:ev.name||'',venue:(ev.competitions&&ev.competitions[0]&&ev.competitions[0].venue&&ev.competitions[0].venue.fullName)||'',date:ev.date||'',status:(ev.status&&ev.status.type&&ev.status.type.description)||''};
       S.tournId=ev.id;
     }
-
-    if(evInfo){
-      S.tournament=Object.assign(S.tournament||{},evInfo);
-    }
-
+    if(evInfo)S.tournament=Object.assign(S.tournament||{},evInfo);
     const par=(currentEv&&currentEv.competitions&&currentEv.competitions[0]&&currentEv.competitions[0].situation&&currentEv.competitions[0].situation.par)||72;
-
     S.field=players.map(function(p,i){
       var rawScore=typeof p.score==='string'?p.score:(p.score&&(p.score.displayValue||String(p.score.value))||'E');
-      var scoreStr=rawScore;
-      if(scoreStr==='0')scoreStr='E';
+      var scoreStr=rawScore;if(scoreStr==='0')scoreStr='E';
       else if(scoreStr&&!isNaN(Number(scoreStr))&&Number(scoreStr)>0)scoreStr='+'+scoreStr;
       return{id:p.id,name:(p.athlete&&p.athlete.displayName)||'Unknown',score:scoreStr||'E',status:(p.status&&p.status.type&&p.status.type.name)||'',pos:(p.status&&p.status.position&&p.status.position.displayName)||String(p.order||i+1)};
     });
-
     S.scores={};
     players.forEach(function(p,i){
       var f=S.field[i];
-
       // Only use manual/dropdown cut system — ignore ESPN CUT status
       var isCut=false;
-      if(S.manualCuts&&S.manualCuts[f.name]){isCut=true;}
+      if(S.manualCuts&&S.manualCuts[f.name])isCut=true;
       if(S.cutOfficial&&S.cutlineScore!==null&&S.cutlineScore!==undefined){
-        var n=s2n(f.score);
-        if(n>=S.cutlineScore)isCut=true;
+        if(s2n(f.score)>=S.cutlineScore)isCut=true;
       }
-
       var todayScore=null;var thru=null;
       var linescores=p.linescores||[];
       if(linescores.length>0){
         var lastRound=linescores[linescores.length-1];
         if(lastRound){
-          var dv=lastRound.displayValue||'';
-          var val=lastRound.value;
+          var dv=lastRound.displayValue||'';var val=lastRound.value;
           if(lastRound.period!==undefined)thru=lastRound.period;
           if(p.status&&p.status.period)thru=p.status.period;
           if(p.status&&p.status.thru!==undefined)thru=p.status.thru;
@@ -834,68 +681,47 @@ async function fetchField(){
               if(dvNum>20){var rel=dvNum-par;todayScore=rel<0?String(rel):rel===0?'E':'+'+rel;}
               else{todayScore=dv.startsWith('+')||dv.startsWith('-')||dv==='E'?dv:(dvNum===0?'E':(dvNum>0?'+'+dvNum:String(dvNum)));}
             }
-          } else if(val!==undefined&&val!==null&&val!==0){
+          }else if(val!==undefined&&val!==null&&val!==0){
             var rel=Number(val)-par;todayScore=rel<0?String(rel):rel===0?'E':'+'+rel;
           }
         }
       }
+      // Thru display — only show F or H# when cut is NOT the reason
       var thruDisplay=null;
-      if(isCut){thruDisplay='CUT';}
-      else if(p.status&&p.status.type){
+      if(!isCut&&p.status&&p.status.type){
         var stype=p.status.type.name||'';
-        if(stype.includes('complete')||stype.includes('final')||stype==='STATUS_PLAY_COMPLETE'){thruDisplay='F';}
-        else if(thru!==null&&thru!==undefined){thruDisplay='H'+thru;}
-        else if(stype.includes('active')){thruDisplay=thru?'H'+thru:'—';}
+        if(stype.includes('complete')||stype.includes('final')||stype==='STATUS_PLAY_COMPLETE')thruDisplay='F';
+        else if(thru!==null&&thru!==undefined)thruDisplay='H'+thru;
+        else if(stype.includes('active'))thruDisplay=thru?'H'+thru:'—';
       }
-
       S.scores[f.name]={score:f.score,n:s2n(f.score),today:todayScore,thru:thruDisplay,made_cut:!isCut,status:f.status};
     });
-
     save();renderFieldTab();renderFieldTable();renderStandings();renderBanner();
     if(document.getElementById('tab-draft').classList.contains('active'))renderDraft();
   }catch(err){console.error('Field fetch error:',err);}
 }
 async function debugAPI(){
-  const el=document.getElementById('debug-out');
-  if(!el)return;
+  const el=document.getElementById('debug-out');if(!el)return;
   el.style.display='block';el.textContent='Fetching...';
   try{
     const r=await fetch(ESPN);const d=await r.json();
     const ev=d.events&&d.events[0];
     const comp=ev&&ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors&&ev.competitions[0].competitors[0];
-    const top3=(ev&&ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors||[]).slice(0,3).map(function(p){
-      return{name:p.athlete&&p.athlete.displayName,score:p.score,scoreStr:JSON.stringify(p.score)};
-    });
-    const out={
-      eventName:ev&&ev.name,
-      totalCompetitors:ev&&ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors&&ev.competitions[0].competitors.length,
-      firstPlayer:comp?{
-        name:comp.athlete&&comp.athlete.displayName,
-        scoreRaw:comp.score,
-        scoreType:typeof comp.score,
-        scoreKeys:comp.score&&typeof comp.score==='object'?Object.keys(comp.score):[],
-        status:comp.status&&comp.status.type&&comp.status.type.name
-      }:null,
-      top3:top3
-    };
-    el.textContent=JSON.stringify(out,null,2);
+    const top3=((ev&&ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors)||[]).slice(0,3).map(function(p){return{name:p.athlete&&p.athlete.displayName,score:p.score,scoreStr:JSON.stringify(p.score)};});
+    el.textContent=JSON.stringify({eventName:ev&&ev.name,totalCompetitors:ev&&ev.competitions&&ev.competitions[0]&&ev.competitions[0].competitors&&ev.competitions[0].competitors.length,firstPlayer:comp?{name:comp.athlete&&comp.athlete.displayName,scoreRaw:comp.score,scoreType:typeof comp.score,status:comp.status&&comp.status.type&&comp.status.type.name}:null,top3},null,2);
   }catch(err){el.textContent='Error: '+err.message;}
 }
 function renderFieldTab(){
   const el=document.getElementById('field-list');if(!S.field.length){el.innerHTML='<div class="muted">No field loaded.</div>';return;}
   const sorted=[...S.field].sort((a,b)=>s2n(a.score)-s2n(b.score));
-  el.innerHTML=`<table class="lbt"><thead><tr><th>Pos</th><th>Player</th><th>Total</th><th>Today</th><th>Salary</th><th>Status</th></tr></thead><tbody>
-  ${sorted.map(p=>{
-    const sc=S.scores[p.name]||{};
-    // Only show missed-cut styling when the cut is official
-    const missed=sc.made_cut===false&&S.cutOfficial;
-    const sal=S.salaries[p.name]?'$'+Number(S.salaries[p.name]).toLocaleString():'-';
-    return`<tr><td style="color:var(--txt3);font-family:var(--fm);font-size:.78rem">${p.pos}</td><td style="${missed?'text-decoration:line-through;color:var(--txt3)':''}">${p.name}</td><td>${sbadge(p.score)}</td><td>${sc.today?sbadge(sc.today):'<span class="muted">—</span>'}</td><td style="font-family:var(--fm);color:var(--gold);font-size:.82rem">${sal}</td><td class="sm" style="color:${missed?'var(--rl)':'var(--txt3)'}">${missed?'Missed Cut':p.status||'Active'}</td></tr>`;
-  }).join('')}</tbody></table>`;
+  el.innerHTML='<table class="lbt"><thead><tr><th>Pos</th><th>Player</th><th>Total</th><th>Today</th><th>Salary</th><th>Status</th></tr></thead><tbody>'
+    +sorted.map(p=>{const sc=S.scores[p.name]||{};const missed=sc.made_cut===false&&S.cutOfficial;const sal=S.salaries[p.name]?'$'+Number(S.salaries[p.name]).toLocaleString():'-';
+      return'<tr><td style="color:var(--txt3);font-family:var(--fm);font-size:.78rem">'+p.pos+'</td><td style="'+(missed?'text-decoration:line-through;color:var(--txt3)':'')+'">'+p.name+'</td><td>'+sbadge(p.score)+'</td><td>'+(sc.today?sbadge(sc.today):'<span class="muted">—</span>')+'</td><td style="font-family:var(--fm);color:var(--gold);font-size:.82rem">'+sal+'</td><td class="sm" style="color:'+(missed?'var(--rl)':'var(--txt3)')+'">'+( missed?'Missed Cut':p.status||'Active')+'</td></tr>';}).join('')
+    +'</tbody></table>';
 }
 function renderFieldTable(){
   const body=document.getElementById('field-sal-body');const countEl=document.getElementById('field-count');if(!body)return;
-  const q=(document.getElementById('field-search')?.value||'').toLowerCase();
+  const q=(document.getElementById('field-search')&&document.getElementById('field-search').value||'').toLowerCase();
   const pickCounts=getPickCounts();const maxPick=S.maxPick||2;
   const espnNames=new Set(S.field.map(f=>f.name));
   const allNames=new Set([...S.field.map(f=>f.name),...Object.keys(S.salaries)]);
@@ -905,14 +731,12 @@ function renderFieldTable(){
   }).sort((a,b)=>b.salary-a.salary||a.name.localeCompare(b.name));
   if(q)rows=rows.filter(r=>r.name.toLowerCase().includes(q));
   const unmatchedCount=rows.filter(r=>r.unmatched).length;
-  if(countEl)countEl.innerHTML=rows.length+' golfers'+(unmatchedCount?` <span class="unmatched-badge">⚠ ${unmatchedCount} unmatched</span>`:'');
-  body.innerHTML=rows.map(r=>`<tr style="${r.picks>=maxPick?'opacity:.45':''}${r.unmatched?';background:rgba(192,57,43,.05)':''}">
-    <td style="color:var(--txt3);font-family:var(--fm);font-size:.75rem;width:28px">${r.pos}</td>
-    <td style="font-weight:500">${r.name}${r.picks>=maxPick?' <span style="font-size:.68rem;color:var(--rl)">(max)</span>':''}${r.unmatched?' <span style="font-size:.68rem;color:var(--rl)">⚠ no ESPN match</span>':''}</td>
-    <td>${sbadge(r.score)}</td>
-    <td style="font-family:var(--fm);color:${r.unmatched?'var(--rl)':'var(--gold)'};font-size:.82rem">${r.salary?'$'+Number(r.salary).toLocaleString():'—'}</td>
-    <td style="font-family:var(--fm);font-size:.8rem;color:${r.picks>=maxPick?'var(--rl)':'var(--txt3)'}">${r.picks}/${r.maxPick||maxPick}</td>
-  </tr>`).join('');
+  if(countEl)countEl.innerHTML=rows.length+' golfers'+(unmatchedCount?' <span class="unmatched-badge">⚠ '+unmatchedCount+' unmatched</span>':'');
+  body.innerHTML=rows.map(r=>'<tr style="'+(r.picks>=maxPick?'opacity:.45':'')+(r.unmatched?';background:rgba(192,57,43,.05)':'')+'"><td style="color:var(--txt3);font-family:var(--fm);font-size:.75rem;width:28px">'+r.pos+'</td>'
+    +'<td style="font-weight:500">'+r.name+(r.picks>=maxPick?' <span style="font-size:.68rem;color:var(--rl)">(max)</span>':'')+(r.unmatched?' <span style="font-size:.68rem;color:var(--rl)">⚠ no ESPN match</span>':'')+'</td>'
+    +'<td>'+sbadge(r.score)+'</td>'
+    +'<td style="font-family:var(--fm);color:'+(r.unmatched?'var(--rl)':'var(--gold)')+';font-size:.82rem">'+(r.salary?'$'+Number(r.salary).toLocaleString():'—')+'</td>'
+    +'<td style="font-family:var(--fm);font-size:.8rem;color:'+(r.picks>=maxPick?'var(--rl)':'var(--txt3)')+'">'+r.picks+'/'+maxPick+'</td></tr>').join('');
   document.getElementById('field-sal-card').style.display='block';
 }
 function importPaste(){
@@ -923,39 +747,28 @@ function importPaste(){
     let parts=line.split('\t');if(parts.length<2)parts=line.split(',');if(parts.length<2){errors++;return;}
     const name=parts[0].trim();const salStr=parts[parts.length-1].replace(/[\$,\s]/g,'').trim();const sal=parseInt(salStr);
     if(!name||isNaN(sal)||sal<=0){errors++;return;}
-    const mapped=(S.nameMap&&S.nameMap[name])||name;
-    let finalName=mapped;
-    if(S.field.length){
-      const espnNames=S.field.map(function(f){return f.name;});
-      const normMapped=normalizeStr(mapped);
-      const exactMatch=espnNames.find(function(n){return normalizeStr(n)===normMapped;});
-      if(exactMatch)finalName=exactMatch;
-    }
+    const mapped=(S.nameMap&&S.nameMap[name])||name;let finalName=mapped;
+    if(S.field.length){const espnNames=S.field.map(function(f){return f.name;});const normMapped=normalizeStr(mapped);const exactMatch=espnNames.find(function(n){return normalizeStr(n)===normMapped;});if(exactMatch)finalName=exactMatch;}
     S.salaries[finalName]=sal;count++;
   });
   save();
   const unmatched=getUnmatchedCount();
-  msgEl.innerHTML='✓ '+count+' imported'+(errors?' ('+errors+' skipped)':'')+(unmatched?(' <span style="color:var(--rl)">· '+unmatched+' name'+(unmatched!==1?'s':'')+' unmatched — check Settings → Name Mapping</span>'):'');
+  msgEl.innerHTML='✓ '+count+' imported'+(errors?' ('+errors+' skipped)':'')+(unmatched?' <span style="color:var(--rl)">· '+unmatched+' name'+(unmatched!==1?'s':'')+' unmatched — check Settings → Name Mapping</span>':'');
   document.getElementById('sal-paste').value='';renderFieldTable();renderFieldTab();
   if(document.getElementById('tab-draft').classList.contains('active'))renderDraft();
 }
-function renderPTags(){const el=document.getElementById('ptags');if(!el)return;el.innerHTML=S.participants.map((p,i)=>`<span class="tag">${p}<button onclick="removeP(${i})">×</button></span>`).join('');}
+function renderPTags(){const el=document.getElementById('ptags');if(!el)return;el.innerHTML=S.participants.map((p,i)=>'<span class="tag">'+p+'<button onclick="removeP('+i+')">×</button></span>').join('');}
 function addP(){const inp=document.getElementById('new-p');const nm=inp.value.trim();if(!nm||S.participants.includes(nm))return;S.participants.push(nm);inp.value='';save();renderPTags();renderOrderList();}
 function removeP(i){const nm=S.participants[i];S.participants.splice(i,1);delete S.picks[nm];if(S.draftOrder)S.draftOrder=S.draftOrder.filter(x=>x!==nm);save();renderPTags();renderOrderList();}
 
 // ── Standings ──────────────────────────────────────
-function s2n(s){if(!s||s==='E'||s==='-')return 0;const n=parseInt(s.replace('+',''));return isNaN(n)?0:n;}
-function sbadge(s){if(!s||s==='-')return`<span class="sc sce">-</span>`;const n=s2n(s);return`<span class="sc ${n<0?'scu':n>0?'sco':'sce'}">${s}</span>`;}
 function calcP(name){
   const picks=(S.picks[name]||[]).filter(x=>x);let total=0,cutCount=0,best=999,spend=0;
   const gdata=picks.map(g=>{
-    const sc=S.scores[g]||{score:'E',n:0,made_cut:true};
-    const scoreNum=sc.n||0;
+    const sc=S.scores[g]||{score:'E',n:0,made_cut:true};const scoreNum=sc.n||0;
     const hasScores=Object.keys(S.scores).length>0;
     const madeCut=!hasScores?true:sc.made_cut!==false;
-    total+=scoreNum;if(scoreNum<best)best=scoreNum;
-    if(madeCut)cutCount++;
-    spend+=Number(S.salaries[g])||0;
+    total+=scoreNum;if(scoreNum<best)best=scoreNum;if(madeCut)cutCount++;spend+=Number(S.salaries[g])||0;
     return{name:g,score:sc.score||'E',madeCut};
   });
   const elim=S.cutOfficial&&cutCount<(S.cutMin||4);
@@ -964,61 +777,52 @@ function calcP(name){
 function renderStandings(){
   const fee=S.fee||10;const cnt=S.participants.length;
   document.getElementById('pot-amt').textContent='$'+(cnt*fee);
-  document.getElementById('pot-sub').textContent=`${cnt} participants · $${fee}/entry`;
+  document.getElementById('pot-sub').textContent=cnt+' participants · $'+fee+'/entry';
   if(!S.tournament){document.getElementById('standings-list').innerHTML='<div class="alert-i">Head to <strong>Setup</strong> then run the <strong>Draft</strong>.</div>';renderBanner();return;}
   const results=S.participants.map(p=>calcP(p)).filter(r=>r.active);
   if(!results.length){document.getElementById('standings-list').innerHTML='<div class="alert-i">No picks yet. Run the <strong>Draft</strong>.</div>';renderBanner();return;}
   results.sort((a,b)=>{if(a.elim&&!b.elim)return 1;if(!a.elim&&b.elim)return-1;if(a.total!==b.total)return a.total-b.total;if(b.cutCount!==a.cutCount)return b.cutCount-a.cutCount;return a.best-b.best;});
   const cutMin=S.cutMin||4;const hasSal=hasSalaries();
-  const colHdr=`<div style="display:grid;grid-template-columns:1fr 52px 52px 46px;padding:.15rem 1.1rem .25rem;align-items:center">
-    <div></div>
-    <div class="col-hdr">Total</div>
-    <div class="col-hdr">Today</div>
-    <div class="col-hdr">Thru</div>
-  </div>`;
+  const colHdr='<div style="display:grid;grid-template-columns:1fr 52px 52px 46px;padding:.15rem 1.1rem .25rem;align-items:center"><div></div><div class="col-hdr">Total</div><div class="col-hdr">Today</div><div class="col-hdr">Thru</div></div>';
   document.getElementById('standings-list').innerHTML=colHdr+results.map((r,i)=>{
     const rank=i+1;const warn=!S.cutOfficial&&r.cutCount<cutMin;
     const ts=r.total===0?'E':r.total>0?'+'+r.total:String(r.total);
     let medal='';
-    if(r.elim)medal=`<span style="color:var(--rl);font-size:1rem">✕</span>`;
-    else if(rank===1)medal=`<span class="medal m1">1</span>`;
-    else if(rank===2)medal=`<span class="medal m2">2</span>`;
-    else if(rank===3)medal=`<span class="medal m3">3</span>`;
-    else medal=`<span style="color:var(--txt3);font-family:var(--fm);font-size:.8rem;width:22px;text-align:center;display:inline-block">${rank}</span>`;
-    const budgetStr=hasSal&&r.spend?` · $${r.spend.toLocaleString()}`:'';
+    if(r.elim)medal='<span style="color:var(--rl);font-size:1rem">✕</span>';
+    else if(rank===1)medal='<span class="medal m1">1</span>';
+    else if(rank===2)medal='<span class="medal m2">2</span>';
+    else if(rank===3)medal='<span class="medal m3">3</span>';
+    else medal='<span style="color:var(--txt3);font-family:var(--fm);font-size:.8rem;width:22px;text-align:center;display:inline-block">'+rank+'</span>';
+    const budgetStr=hasSal&&r.spend?' · $'+r.spend.toLocaleString():'';
     const missedCount=r.gdata.filter(g=>!g.madeCut).length;
     const todaySum=r.gdata.reduce((sum,g)=>{const sc=S.scores[g.name]||{};return sum+(sc.today?s2n(sc.today):0);},0);
-    const todayStr=r.gdata.length&&r.gdata.some(g=>S.scores[g.name]&&S.scores[g.name].today)?(todaySum===0?'E':todaySum>0?'+'+todaySum:String(todaySum)):null;
-    return`<div class="prow ${r.elim?'elim':''} ${rank===1&&!r.elim?'lead':''}" style="${r.elim?'opacity:.45;filter:grayscale(0.6)':''}">
-      <div style="display:grid;grid-template-columns:1fr 52px 52px 46px;align-items:center;gap:.25rem">
-        <div class="flex" style="min-width:0;overflow:hidden">
-          ${medal}
-          <span class="pname" style="${r.elim?'text-decoration:line-through;color:var(--txt3)':''};">${r.name}</span>
-          ${r.elim?`<span style="background:rgba(192,57,43,.2);color:var(--rl);border:1px solid var(--red);font-size:.62rem;padding:.1rem .45rem;border-radius:20px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;flex-shrink:0">elim · ${missedCount} cut</span>`:''}
-          ${warn?`<span class="sm" style="color:var(--rl);white-space:nowrap;flex-shrink:0">⚠ ${r.cutCount}/${r.picks.length}</span>`:''}
-          <span class="sm muted" style="white-space:nowrap;flex-shrink:0">${r.cutCount}/${r.picks.length} cut${budgetStr}</span>
-        </div>
-        <div class="score-col">${sbadge(ts)}</div>
-        <div class="score-col">${todayStr?sbadge(todayStr):`<span class="muted" style="font-size:.75rem">—</span>`}</div>
-        <div class="thru-col">—</div>
-      </div>
-      <div class="chips">${r.gdata.map(g=>{
+    const hasTodayData=r.gdata.some(g=>S.scores[g.name]&&S.scores[g.name].today);
+    const todayStr=hasTodayData?(todaySum===0?'E':todaySum>0?'+'+todaySum:String(todaySum)):null;
+    return'<div class="prow '+(r.elim?'elim':'')+' '+(rank===1&&!r.elim?'lead':'')+'" style="'+(r.elim?'opacity:.45;filter:grayscale(0.6)':'')+'"><div style="display:grid;grid-template-columns:1fr 52px 52px 46px;align-items:center;gap:.25rem">'
+      +'<div class="flex" style="min-width:0;overflow:hidden">'+medal
+      +'<span class="pname" style="'+(r.elim?'text-decoration:line-through;color:var(--txt3)':'')+';">'+r.name+'</span>'
+      +(r.elim?'<span style="background:rgba(192,57,43,.2);color:var(--rl);border:1px solid var(--red);font-size:.62rem;padding:.1rem .45rem;border-radius:20px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;flex-shrink:0">elim · '+missedCount+' cut</span>':'')
+      +(warn?'<span class="sm" style="color:var(--rl);white-space:nowrap;flex-shrink:0">⚠ '+r.cutCount+'/'+r.picks.length+'</span>':'')
+      +'<span class="sm muted" style="white-space:nowrap;flex-shrink:0">'+r.cutCount+'/'+r.picks.length+' cut'+budgetStr+'</span></div>'
+      +'<div class="score-col">'+sbadge(ts)+'</div>'
+      +'<div class="score-col">'+(todayStr?sbadge(todayStr):'<span class="muted" style="font-size:.75rem">—</span>')+'</div>'
+      +'<div class="thru-col">—</div></div>'
+      +'<div class="chips">'+r.gdata.map(g=>{
         const sc=S.scores[g.name]||{};
-        const todayBadge=sc.today?`<span style="font-family:var(--fm);font-size:.65rem;opacity:.8;margin-left:1px">${sc.today}</span>`:'';
-        const thruBadge=sc.thru?`<span style="font-size:.6rem;color:var(--txt3);font-family:var(--fm);margin-left:1px">${sc.thru}</span>`:'';
-        // Only apply cut styling (xc class) when the cut is officially declared
+        const todayBadge=sc.today?'<span style="font-family:var(--fm);font-size:.65rem;opacity:.8;margin-left:1px">'+sc.today+'</span>':'';
+        const thruBadge=sc.thru?'<span style="font-size:.6rem;color:var(--txt3);font-family:var(--fm);margin-left:1px">'+sc.thru+'</span>':'';
+        // Only apply cut styling when cut is officially declared
         const cutDisplay=!g.madeCut&&S.cutOfficial;
-        return`<span class="chip ${cutDisplay?'xc':'mc'}" style="${cutDisplay?'opacity:.5':''}">${g.name} ${sbadge(g.score)}${todayBadge}${thruBadge}</span>`;
-      }).join('')}</div>
-    </div>`;
+        return'<span class="chip '+(cutDisplay?'xc':'mc')+'" style="'+(cutDisplay?'opacity:.5':'')+'">'+g.name+' '+sbadge(g.score)+todayBadge+thruBadge+'</span>';
+      }).join('')+'</div></div>';
   }).join('');
   renderBanner();
 }
 function renderBanner(){
   const el=document.getElementById('tbanner');if(!S.tournament){el.innerHTML='';return;}
   const t=S.tournament;const sc=t.status==='In Progress'?'slive':t.status==='Final'?'sfin':'spre';
-  el.innerHTML=`<div class="tbanner"><div><div class="tname">${t.name||'Tournament'}</div><div class="tmeta">${t.venue||''}${t.date?' · '+new Date(t.date).toLocaleDateString():''}</div></div>
-    <div class="flex" style="flex-wrap:wrap;gap:.5rem"><span class="spill ${sc}">${t.status||'Upcoming'}</span><button class="btn bs bsm" onclick="fetchField()">↻ Refresh Scores</button></div></div>`;
+  el.innerHTML='<div class="tbanner"><div><div class="tname">'+(t.name||'Tournament')+'</div><div class="tmeta">'+(t.venue||'')+(t.date?' · '+new Date(t.date).toLocaleDateString():'')+'</div></div>'
+    +'<div class="flex" style="flex-wrap:wrap;gap:.5rem"><span class="spill '+sc+'">'+(t.status||'Upcoming')+'</span><button class="btn bs bsm" onclick="fetchField()">↻ Refresh Scores</button></div></div>';
 }
 
 // ── History ────────────────────────────────────────
@@ -1027,262 +831,127 @@ function archiveTournament(){
   const results=S.participants.map(p=>calcP(p)).filter(r=>r.active);
   results.sort((a,b)=>{if(a.elim&&!b.elim)return 1;if(!a.elim&&b.elim)return-1;if(a.total!==b.total)return a.total-b.total;if(b.cutCount!==a.cutCount)return b.cutCount-a.cutCount;return a.best-b.best;});
   const pot=S.participants.length*(S.fee||10);const winner=results.find(r=>!r.elim);
-  S.history.unshift({id:Date.now(),tournament:S.tournament,date:new Date().toISOString(),pot,winner:winner?.name||'—',winnerScore:winner?winner.total:null,participants:S.participants.length,draftOrder:S.draftOrder,results:results.map(r=>({name:r.name,total:r.total,cutCount:r.cutCount,elim:r.elim,picks:r.picks,spend:r.spend}))});
-  S.tournament=null;S.tournId=null;S.picks={};S.draftLog=[];S.currentDraftSlot=0;S.draftComplete=false;S.draftOrder=null;S.scores={};S.field=[];S.salaries={};S.cutOfficial=false;
+  S.history.unshift({id:Date.now(),tournament:S.tournament,date:new Date().toISOString(),pot,winner:winner&&winner.name||'—',winnerScore:winner?winner.total:null,participants:S.participants.length,draftOrder:S.draftOrder,results:results.map(r=>({name:r.name,total:r.total,cutCount:r.cutCount,elim:r.elim,picks:r.picks,spend:r.spend}))});
+  S.tournament=null;S.tournId=null;S.picks={};S.draftLog=[];S.currentDraftSlot=0;S.draftComplete=false;S.draftOrder=null;S.scores={};S.field=[];S.salaries={};S.cutOfficial=false;S.cutlineScore=null;S.manualCuts={};
   save();alert('Tournament archived!');
   document.querySelectorAll('.nt').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.tc').forEach(x=>x.classList.remove('active'));
   document.getElementById('tab-history').classList.add('active');
-  document.querySelectorAll('.nt')[4].classList.add('active');
-  renderHistory();
+  document.querySelectorAll('.nt')[4].classList.add('active');renderHistory();
 }
 function renderHistory(){
-  const el=document.getElementById('history-list');document.getElementById('hist-count').textContent=`${S.history.length} tournament${S.history.length!==1?'s':''}`;
+  const el=document.getElementById('history-list');document.getElementById('hist-count').textContent=S.history.length+' tournament'+(S.history.length!==1?'s':'');
   if(!S.history.length){el.innerHTML='<div class="muted">No past tournaments yet.</div>';return;}
-  el.innerHTML=S.history.map((h,hi)=>`<div class="hist-card">
-    <div class="hist-head" onclick="toggleHist(${hi})"><div>
-      <div style="font-family:var(--fd);font-size:1.05rem;letter-spacing:1px;color:var(--gold)">${h.tournament?.name||'Tournament'}</div>
-      <div class="sm muted">${h.tournament?.venue||''} · ${h.date?new Date(h.date).toLocaleDateString():''}</div></div>
-      <div class="flex"><div style="text-align:right"><div class="sm" style="color:var(--gold);font-weight:600">🏆 ${h.winner}</div>
-        <div class="sm muted">Pot: $${h.pot} · ${h.participants} players</div></div>
-        <span style="color:var(--txt3);font-size:1.2rem" id="harrow-${hi}">▸</span></div></div>
-    <div class="hist-body" id="hbody-${hi}">
-      <table class="lbt"><thead><tr><th>Rank</th><th>Participant</th><th>Score</th><th>Cuts</th><th>Spent</th></tr></thead>
-      <tbody>${(h.results||[]).map((r,i)=>{const ts=r.total===0?'E':r.total>0?'+'+r.total:String(r.total);
-        return`<tr><td style="color:var(--txt3);font-family:var(--fm);font-size:.78rem">${r.elim?'—':i+1}</td><td style="font-weight:500">${r.name}${i===0&&!r.elim?' 🏆':''}</td><td>${sbadge(ts)}</td><td class="sm muted">${r.cutCount}/${r.picks?.length||6}</td><td class="sm" style="font-family:var(--fm);color:var(--txt3)">${r.spend?'$'+r.spend.toLocaleString():'-'}</td></tr>`;}).join('')}</tbody></table>
-      ${h.draftOrder?`<div class="sm muted mt1">Draft order: ${h.draftOrder.join(' → ')}</div>`:''}
-      <button class="btn bd bsm mt1" onclick="deleteHistory(${hi})">Delete Record</button>
-    </div></div>`).join('');
+  el.innerHTML=S.history.map((h,hi)=>'<div class="hist-card"><div class="hist-head" onclick="toggleHist('+hi+')"><div>'
+    +'<div style="font-family:var(--fd);font-size:1.05rem;letter-spacing:1px;color:var(--gold)">'+(h.tournament&&h.tournament.name||'Tournament')+'</div>'
+    +'<div class="sm muted">'+(h.tournament&&h.tournament.venue||'')+' · '+(h.date?new Date(h.date).toLocaleDateString():'')+'</div></div>'
+    +'<div class="flex"><div style="text-align:right"><div class="sm" style="color:var(--gold);font-weight:600">🏆 '+h.winner+'</div>'
+    +'<div class="sm muted">Pot: $'+h.pot+' · '+h.participants+' players</div></div>'
+    +'<span style="color:var(--txt3);font-size:1.2rem" id="harrow-'+hi+'">▸</span></div></div>'
+    +'<div class="hist-body" id="hbody-'+hi+'"><table class="lbt"><thead><tr><th>Rank</th><th>Participant</th><th>Score</th><th>Cuts</th><th>Spent</th></tr></thead><tbody>'
+    +(h.results||[]).map((r,i)=>{const ts=r.total===0?'E':r.total>0?'+'+r.total:String(r.total);
+      return'<tr><td style="color:var(--txt3);font-family:var(--fm);font-size:.78rem">'+(r.elim?'—':i+1)+'</td><td style="font-weight:500">'+r.name+(i===0&&!r.elim?' 🏆':'')+'</td><td>'+sbadge(ts)+'</td><td class="sm muted">'+r.cutCount+'/'+(r.picks&&r.picks.length||6)+'</td><td class="sm" style="font-family:var(--fm);color:var(--txt3)">'+(r.spend?'$'+r.spend.toLocaleString():'-')+'</td></tr>';}).join('')
+    +'</tbody></table>'+(h.draftOrder?'<div class="sm muted mt1">Draft order: '+h.draftOrder.join(' → ')+'</div>':'')
+    +'<button class="btn bd bsm mt1" onclick="deleteHistory('+hi+')">Delete Record</button></div></div>').join('');
 }
 function toggleHist(i){document.getElementById('hbody-'+i).classList.toggle('open');document.getElementById('harrow-'+i).textContent=document.getElementById('hbody-'+i).classList.contains('open')?'▾':'▸';}
 function deleteHistory(i){if(!confirm('Delete this record?'))return;S.history.splice(i,1);save();renderHistory();}
 
 // ── Name Mapping ───────────────────────────────────
-function resolvedName(n){return(S.nameMap&&S.nameMap[n])||n;}
-
-function applyManualCuts(){
-  const raw=document.getElementById('cut-list-input').value.trim();
-  const msgEl=document.getElementById('cut-list-msg');
-  if(!raw){msgEl.textContent='No names entered.';return;}
-  const names=raw.split(/\r?\n/).map(function(n){return n.trim();}).filter(function(n){return n;});
-  if(!S.manualCuts)S.manualCuts={};
-  names.forEach(function(n){
-    const norm=normalizeStr(n);
-    const match=S.field.find(function(f){return normalizeStr(f.name)===norm;});
-    const finalName=match?match.name:n;
-    S.manualCuts[finalName]=true;
-    if(S.scores[finalName])S.scores[finalName].made_cut=false;
-  });
-  save();
-  msgEl.textContent='✓ '+names.length+' golfer'+(names.length!==1?'s':'')+' marked as cut.';
-  renderStandings();renderFieldTab();renderFieldTable();
-}
-
-function clearManualCuts(){
-  S.manualCuts={};
-  document.getElementById('cut-list-input').value='';
-  document.getElementById('cut-list-msg').textContent='Overrides cleared.';
-  save();renderStandings();renderFieldTab();renderFieldTable();
-}
-
-function applyNameMapToSalaries(){
-  if(!S.nameMap)return;
-  Object.entries(S.nameMap).forEach(([dk,espn])=>{
-    if(S.salaries[dk]!==undefined&&dk!==espn){
-      S.salaries[espn]=S.salaries[dk];
-      delete S.salaries[dk];
-    }
-  });
-}
-
-function normalizeStr(str){
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]/g,'');
-}
-
-function fuzzyMatch(dkName, espnNames){
-  const dk=normalizeStr(dkName);
-  let best=null,bestScore=0;
+function normalizeStr(str){return str.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]/g,'');}
+function fuzzyMatch(dkName,espnNames){
+  const dk=normalizeStr(dkName);let best=null,bestScore=0;
   espnNames.forEach(function(espn){
-    const e=normalizeStr(espn);
-    const longer=Math.max(dk.length,e.length);
-    if(!longer)return;
-    const dkLast=dk.slice(-6);const eLast=e.slice(-6);
-    let score=0;
-    if(dkLast===eLast)score+=0.5;
-    const dkSet=new Set(dk);const eSet=new Set(e);
-    let shared=0;dkSet.forEach(function(c){if(eSet.has(c))shared++;});
-    score+=shared/longer*0.5;
-    if(score>bestScore){bestScore=score;best=espn;}
+    const e=normalizeStr(espn);const longer=Math.max(dk.length,e.length);if(!longer)return;
+    const dkLast=dk.slice(-6);const eLast=e.slice(-6);let score=0;if(dkLast===eLast)score+=0.5;
+    const dkSet=new Set(dk);const eSet=new Set(e);let shared=0;dkSet.forEach(function(c){if(eSet.has(c))shared++;});
+    score+=shared/longer*0.5;if(score>bestScore){bestScore=score;best=espn;}
   });
   return bestScore>0.55?{name:best,score:bestScore}:null;
 }
-
 async function detectMismatches(){
   if(!S.field.length){
     const unmatchedWrap=document.getElementById('namemap-unmatched-wrap');
     if(unmatchedWrap)unmatchedWrap.innerHTML='<div class="muted sm"><span class="spinner"></span> Loading field...</div>';
     await fetchField();
-    if(!S.field.length){
-      if(unmatchedWrap)unmatchedWrap.innerHTML='<div class="alert-w" style="margin:0">Could not load field. Check connection and try again.</div>';
-      return;
-    }
+    if(!S.field.length){if(unmatchedWrap)unmatchedWrap.innerHTML='<div class="alert-w" style="margin:0">Could not load field. Check connection and try again.</div>';return;}
   }
   const espnNames=S.field.map(f=>f.name);
   const unmatchedWrap=document.getElementById('namemap-unmatched-wrap');
   const unmatched=Object.keys(S.salaries).filter(dk=>!espnNames.includes(dk));
-  if(!unmatched.length){
-    unmatchedWrap.innerHTML='<div class="alert-i" style="margin:0">✓ All salary names match ESPN names perfectly!</div>';
-    renderSavedMaps();return;
-  }
-  const rows=unmatched.map(dk=>{
-    const suggestion=fuzzyMatch(dk,espnNames);
-    return{dk,suggestion};
-  });
-  unmatchedWrap.innerHTML=`
-    <div class="alert-w" style="margin-bottom:.65rem">⚠ ${unmatched.length} DraftKings name${unmatched.length!==1?'s':''} don't match ESPN. Map or remove them below:</div>
-    <div style="border:1px solid var(--bdr);border-radius:6px;overflow:hidden">
-      <div class="map-row" style="background:var(--bg3);font-size:.68rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);font-weight:500;padding:.35rem .6rem;grid-template-columns:1fr auto 1fr auto auto">
-        <div>DraftKings Name</div><div></div><div>Map to ESPN Name</div><div></div><div></div>
-      </div>
-      ${rows.map(({dk,suggestion})=>`
-      <div class="map-row" style="padding:.4rem .6rem;grid-template-columns:1fr auto 1fr auto auto;gap:.4rem">
-        <div class="map-dk">${dk}</div>
-        <div class="map-arrow">→</div>
-        <div>
-          <select id="mapsel-${encodeURIComponent(dk)}" style="font-size:.78rem">
-            <option value="">-- Select ESPN name --</option>
-            ${espnNames.sort().map(n=>`<option value="${n}" ${suggestion&&suggestion.name===n?'selected':''}>${n}</option>`).join('')}
-          </select>
-        </div>
-        <button class="btn bp bsm" onclick="confirmMap('${encodeURIComponent(dk)}')" style="white-space:nowrap">Map</button>
-        <button class="btn bd bsm" onclick="removeSalary('${encodeURIComponent(dk)}')" title="Remove from salary list" style="white-space:nowrap">✕ Remove</button>
-      </div>`).join('')}
-    </div>`;
+  if(!unmatched.length){unmatchedWrap.innerHTML='<div class="alert-i" style="margin:0">✓ All salary names match ESPN names perfectly!</div>';renderSavedMaps();return;}
+  const rows=unmatched.map(dk=>{const suggestion=fuzzyMatch(dk,espnNames);return{dk,suggestion};});
+  unmatchedWrap.innerHTML='<div class="alert-w" style="margin-bottom:.65rem">⚠ '+unmatched.length+' DraftKings name'+(unmatched.length!==1?'s':'')+' don\'t match ESPN. Map or remove them below:</div>'
+    +'<div style="border:1px solid var(--bdr);border-radius:6px;overflow:hidden">'
+    +'<div class="map-row" style="background:var(--bg3);font-size:.68rem;text-transform:uppercase;letter-spacing:.4px;color:var(--txt3);font-weight:500;padding:.35rem .6rem;grid-template-columns:1fr auto 1fr auto auto"><div>DraftKings Name</div><div></div><div>Map to ESPN Name</div><div></div><div></div></div>'
+    +rows.map(({dk,suggestion})=>'<div class="map-row" style="padding:.4rem .6rem;grid-template-columns:1fr auto 1fr auto auto;gap:.4rem">'
+      +'<div class="map-dk">'+dk+'</div><div class="map-arrow">→</div>'
+      +'<div><select id="mapsel-'+encodeURIComponent(dk)+'" style="font-size:.78rem"><option value="">-- Select ESPN name --</option>'
+      +espnNames.sort().map(n=>'<option value="'+n+'" '+(suggestion&&suggestion.name===n?'selected':'')+'>'+n+'</option>').join('')+'</select></div>'
+      +'<button class="btn bp bsm" onclick="confirmMap(\''+encodeURIComponent(dk)+'\')" style="white-space:nowrap">Map</button>'
+      +'<button class="btn bd bsm" onclick="removeSalary(\''+encodeURIComponent(dk)+'\')" style="white-space:nowrap">✕ Remove</button></div>').join('')+'</div>';
   renderSavedMaps();
 }
-
 function removeSalary(encodedDk){
-  const dk=decodeURIComponent(encodedDk);
-  if(!confirm(`Remove "${dk}" from the salary list? This won't affect any picks already made.`))return;
-  delete S.salaries[dk];
-  save();
-  detectMismatches();
-  renderFieldTable();
-  renderFieldTab();
+  const dk=decodeURIComponent(encodedDk);if(!confirm('Remove "'+dk+'" from the salary list?'))return;
+  delete S.salaries[dk];save();detectMismatches();renderFieldTable();renderFieldTab();
 }
-
 function confirmMap(encodedDk){
-  const dk=decodeURIComponent(encodedDk);
-  const sel=document.getElementById('mapsel-'+encodedDk);
-  const espn=sel?.value;
+  const dk=decodeURIComponent(encodedDk);const sel=document.getElementById('mapsel-'+encodedDk);const espn=sel&&sel.value;
   if(!espn){alert('Please select an ESPN name.');return;}
-  if(!S.nameMap)S.nameMap={};
-  S.nameMap[dk]=espn;
-  if(S.salaries[dk]!==undefined){
-    S.salaries[espn]=S.salaries[dk];
-    delete S.salaries[dk];
-  }
-  save();
-  detectMismatches();
-  renderFieldTable();
-  renderFieldTab();
-}
-
-function addManualMap(){
-  const row=document.getElementById('manual-map-row');
-  row.style.display=row.style.display==='none'?'block':'none';
-  const sel=document.getElementById('map-espn-input');
-  sel.innerHTML='<option value="">-- Select ESPN name --</option>'+
-    S.field.map(f=>f.name).sort().map(n=>`<option value="${n}">${n}</option>`).join('');
-}
-
-function saveManualMap(){
-  const dk=document.getElementById('map-dk-input').value.trim();
-  const espn=document.getElementById('map-espn-input').value;
-  if(!dk||!espn){alert('Please fill in both fields.');return;}
-  if(!S.nameMap)S.nameMap={};
-  S.nameMap[dk]=espn;
+  if(!S.nameMap)S.nameMap={};S.nameMap[dk]=espn;
   if(S.salaries[dk]!==undefined){S.salaries[espn]=S.salaries[dk];delete S.salaries[dk];}
-  document.getElementById('map-dk-input').value='';
-  document.getElementById('manual-map-row').style.display='none';
+  save();detectMismatches();renderFieldTable();renderFieldTab();
+}
+function addManualMap(){
+  const row=document.getElementById('manual-map-row');row.style.display=row.style.display==='none'?'block':'none';
+  const sel=document.getElementById('map-espn-input');
+  sel.innerHTML='<option value="">-- Select ESPN name --</option>'+S.field.map(f=>f.name).sort().map(n=>'<option value="'+n+'">'+n+'</option>').join('');
+}
+function saveManualMap(){
+  const dk=document.getElementById('map-dk-input').value.trim();const espn=document.getElementById('map-espn-input').value;
+  if(!dk||!espn){alert('Please fill in both fields.');return;}
+  if(!S.nameMap)S.nameMap={};S.nameMap[dk]=espn;
+  if(S.salaries[dk]!==undefined){S.salaries[espn]=S.salaries[dk];delete S.salaries[dk];}
+  document.getElementById('map-dk-input').value='';document.getElementById('manual-map-row').style.display='none';
   save();renderSavedMaps();renderFieldTable();renderFieldTab();
 }
-
-function clearAllMaps(){
-  if(!confirm('Clear all name mappings?'))return;
-  S.nameMap={};save();renderSavedMaps();
-  document.getElementById('namemap-unmatched-wrap').innerHTML='';
-}
-
-function removeMap(dk){
-  if(!S.nameMap)return;
-  delete S.nameMap[dk];save();renderSavedMaps();
-}
-
+function clearAllMaps(){if(!confirm('Clear all name mappings?'))return;S.nameMap={};save();renderSavedMaps();document.getElementById('namemap-unmatched-wrap').innerHTML='';}
+function removeMap(dk){if(!S.nameMap)return;delete S.nameMap[dk];save();renderSavedMaps();}
 function renderSavedMaps(){
   const el=document.getElementById('namemap-saved-wrap');if(!el)return;
-  const maps=Object.entries(S.nameMap||{});
-  if(!maps.length){el.innerHTML='';return;}
-  el.innerHTML=`<div class="sm muted mb05" style="margin-top:.65rem">Active mappings (${maps.length}):</div>
-    <div style="border:1px solid var(--bdr);border-radius:6px;overflow:hidden">
-      ${maps.map(([dk,espn])=>`<div class="map-row" style="padding:.35rem .6rem">
-        <div class="map-dk">${dk}</div>
-        <div class="map-arrow">→</div>
-        <div class="map-espn">${espn}</div>
-        <button class="btn bd bsm" onclick="removeMap('${dk.replace(/'/g,"\\'")}')">✕</button>
-      </div>`).join('')}
-    </div>`;
+  const maps=Object.entries(S.nameMap||{});if(!maps.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="sm muted mb05" style="margin-top:.65rem">Active mappings ('+maps.length+'):</div>'
+    +'<div style="border:1px solid var(--bdr);border-radius:6px;overflow:hidden">'
+    +maps.map(([dk,espn])=>'<div class="map-row" style="padding:.35rem .6rem"><div class="map-dk">'+dk+'</div><div class="map-arrow">→</div><div class="map-espn">'+espn+'</div>'
+      +'<button class="btn bd bsm" onclick="removeMap(\''+dk.replace(/'/g,"\\'")+'\')" >✕</button></div>').join('')+'</div>';
 }
-
 function getUnmatchedCount(){
   if(!S.field.length||!Object.keys(S.salaries).length)return 0;
   const espnNorms=new Set(S.field.map(function(f){return normalizeStr(f.name);}));
   return Object.keys(S.salaries).filter(function(dk){return !espnNorms.has(normalizeStr(dk));}).length;
 }
 
-// ── Admin / Settings ───────────────────────────────
-function simpleHash(str){
-  var hash=5381;
-  for(var i=0;i<str.length;i++){hash=((hash<<5)+hash)+str.charCodeAt(i);hash=hash&hash;}
-  return String(hash>>>0);
-}
-
+// ── Admin ──────────────────────────────────────────
+function simpleHash(str){var hash=5381;for(var i=0;i<str.length;i++){hash=((hash<<5)+hash)+str.charCodeAt(i);hash=hash&hash;}return String(hash>>>0);}
 const DEFAULT_PW_HASH=simpleHash('thepool');
-
 function adminLogin(){
-  const pw=document.getElementById('admin-pw-input').value;
-  const errEl=document.getElementById('admin-login-error');
+  const pw=document.getElementById('admin-pw-input').value;const errEl=document.getElementById('admin-login-error');
   if(!pw){errEl.style.display='block';errEl.textContent='Please enter a password.';return;}
   const expected=S.adminPwHash||DEFAULT_PW_HASH;
   if(simpleHash(pw)===expected){
-    S.isAdmin=true;
-    document.getElementById('admin-pw-input').value='';
-    errEl.style.display='none';
-    updateAdminUI();
+    S.isAdmin=true;document.getElementById('admin-pw-input').value='';errEl.style.display='none';updateAdminUI();
     try{localStorage.setItem('gp_admin',JSON.stringify({isAdmin:true,expires:Date.now()+8*3600*1000}));}catch(e){}
-  } else {
-    errEl.style.display='block';errEl.textContent='Incorrect password.';
-    document.getElementById('admin-pw-input').value='';
-  }
+  }else{errEl.style.display='block';errEl.textContent='Incorrect password.';document.getElementById('admin-pw-input').value='';}
 }
-
-function adminLogout(){
-  S.isAdmin=false;
-  try{localStorage.removeItem('gp_admin');}catch(e){}
-  updateAdminUI();
-}
-
+function adminLogout(){S.isAdmin=false;try{localStorage.removeItem('gp_admin');}catch(e){}updateAdminUI();}
 function changeAdminPassword(){
-  const newPw=document.getElementById('admin-pw-new').value.trim();
-  const msgEl=document.getElementById('admin-pw-msg');
+  const newPw=document.getElementById('admin-pw-new').value.trim();const msgEl=document.getElementById('admin-pw-msg');
   if(!newPw||newPw.length<4){msgEl.style.display='block';msgEl.textContent='Password must be at least 4 characters.';msgEl.style.color='var(--rl)';return;}
-  S.adminPwHash=simpleHash(newPw);
-  document.getElementById('admin-pw-new').value='';
+  S.adminPwHash=simpleHash(newPw);document.getElementById('admin-pw-new').value='';
   msgEl.style.display='block';msgEl.textContent='✓ Password updated and saved.';msgEl.style.color='var(--gl)';
-  save();
-  setTimeout(()=>{msgEl.style.display='none';},3000);
+  save();setTimeout(()=>{msgEl.style.display='none';},3000);
 }
-
 function updateAdminUI(){
   const a=S.isAdmin;
   document.getElementById('admin-nav-badge').style.display=a?'inline':'none';
@@ -1294,10 +963,8 @@ function updateAdminUI(){
   const sps=document.getElementById('sal-paste-section');if(sps)sps.style.display=a?'block':'none';
   const arc=document.getElementById('archive-section');if(arc)arc.style.display=a?'block':'none';
   const nms=document.getElementById('namemap-section');if(nms)nms.style.display=a?'block':'none';
-  const cos=document.getElementById('cut-override-section');if(cos)cos.style.display=a?'block':'none';
   if(a)renderSavedMaps();
 }
-
 function saveSettings(){
   S.fee=parseInt(document.getElementById('fee-input').value)||10;
   S.cap=parseInt(document.getElementById('cap-input').value)||50000;
@@ -1306,13 +973,10 @@ function saveSettings(){
   S.cutOfficial=document.getElementById('cut-official').checked;
   const clEl=document.getElementById('cutline-score');
   S.cutlineScore=(clEl&&clEl.value!=='')?parseInt(clEl.value):null;
-  const clWrap=document.getElementById('cutline-wrap');
-  if(clWrap)clWrap.style.display=S.cutOfficial?'block':'none';
+  const clWrap=document.getElementById('cutline-wrap');if(clWrap)clWrap.style.display=S.cutOfficial?'block':'none';
   const cmd=document.getElementById('cutmin-display');if(cmd)cmd.textContent=S.cutMin||4;
-  updateCutSummary();
-  save();
+  updateCutSummary();save();
 }
-
 function updateCutSummary(){
   const el=document.getElementById('cut-summary');if(!el)return;
   if(!S.cutOfficial||S.cutlineScore===null||S.cutlineScore===undefined){el.textContent='';return;}
@@ -1324,36 +988,20 @@ function updateCutSummary(){
 // ── Boot ───────────────────────────────────────────
 (async()=>{
   document.getElementById('standings-list').innerHTML='<div class="muted"><span class="spinner"></span> Loading shared data…</div>';
-  load();
-  await supaLoad();
+  load();await supaLoad();
   const fi=document.getElementById('fee-input');if(fi)fi.value=S.fee||10;
   const ci=document.getElementById('cap-input');if(ci)ci.value=S.cap||50000;
   const cmi=document.getElementById('cutmin-input');if(cmi)cmi.value=S.cutMin||4;
   const mpi=document.getElementById('maxpick-input');if(mpi)mpi.value=S.maxPick||2;
   const clSelEl=document.getElementById('cutline-score');
-  if(clSelEl){
-    for(var cutIdx=-5;cutIdx<=25;cutIdx++){
-      var cutOpt=document.createElement('option');
-      cutOpt.value=cutIdx;
-      cutOpt.textContent=cutIdx<0?String(cutIdx):cutIdx===0?'E':'+'+cutIdx;
-      clSelEl.appendChild(cutOpt);
-    }
-  }
+  if(clSelEl){for(var cutIdx=-5;cutIdx<=25;cutIdx++){var cutOpt=document.createElement('option');cutOpt.value=cutIdx;cutOpt.textContent=cutIdx<0?String(cutIdx):cutIdx===0?'E':'+'+cutIdx;clSelEl.appendChild(cutOpt);}}
   const co=document.getElementById('cut-official');if(co)co.checked=!!S.cutOfficial;
-  const clWrap=document.getElementById('cutline-wrap');
-  if(clWrap)clWrap.style.display=S.cutOfficial?'block':'none';
-  const clEl=document.getElementById('cutline-score');
-  if(clEl&&S.cutlineScore!==null&&S.cutlineScore!==undefined)clEl.value=S.cutlineScore;
+  const clWrap=document.getElementById('cutline-wrap');if(clWrap)clWrap.style.display=S.cutOfficial?'block':'none';
+  const clEl2=document.getElementById('cutline-score');if(clEl2&&S.cutlineScore!==null&&S.cutlineScore!==undefined)clEl2.value=S.cutlineScore;
   const cmd=document.getElementById('cutmin-display');if(cmd)cmd.textContent=S.cutMin||4;
-  try{
-    const adm=JSON.parse(localStorage.getItem('gp_admin')||'{}');
-    if(adm.isAdmin&&adm.expires&&Date.now()<adm.expires)S.isAdmin=true;
-  }catch(e){}
-  updateAdminUI();
-  renderBanner();
-  renderStandings();
-  if(S.tournId)fetchField();
-  startSync();
+  try{const adm=JSON.parse(localStorage.getItem('gp_admin')||'{}');if(adm.isAdmin&&adm.expires&&Date.now()<adm.expires)S.isAdmin=true;}catch(e){}
+  updateAdminUI();renderBanner();renderStandings();
+  if(S.tournId)fetchField();startSync();
 })();
 </script>
 </body>
