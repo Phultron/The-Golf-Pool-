@@ -970,8 +970,12 @@ function calcP(name){
     // Cutline: if cut is official and cutlineScore is set, use score comparison
     // Otherwise fall back to API made_cut flag and manual overrides
     let madeCut;
-    if(S.cutOfficial&&S.cutlineScore!==null&&S.cutlineScore!==undefined){
+    const hasScores=Object.keys(S.scores).length>0;
+    if(S.cutOfficial&&S.cutlineScore!==null&&S.cutlineScore!==undefined&&hasScores){
       madeCut=scoreNum<S.cutlineScore;
+    } else if(!hasScores){
+      // No scores loaded yet — assume everyone made the cut
+      madeCut=true;
     } else {
       const manualCut=S.manualCuts&&S.manualCuts[g];
       madeCut=!manualCut&&sc.made_cut!==false;
@@ -1147,8 +1151,16 @@ function fuzzyMatch(dkName, espnNames){
   return bestScore>0.55?{name:best,score:bestScore}:null;
 }
 
-function detectMismatches(){
-  if(!S.field.length){alert('Load the tournament field first (Setup tab).');return;}
+async function detectMismatches(){
+  if(!S.field.length){
+    const unmatchedWrap=document.getElementById('namemap-unmatched-wrap');
+    if(unmatchedWrap)unmatchedWrap.innerHTML='<div class="muted sm"><span class="spinner"></span> Loading field...</div>';
+    await fetchField();
+    if(!S.field.length){
+      if(unmatchedWrap)unmatchedWrap.innerHTML='<div class="alert-w" style="margin:0">Could not load field. Check connection and try again.</div>';
+      return;
+    }
+  }
   const espnNames=S.field.map(f=>f.name);
   const unmatchedWrap=document.getElementById('namemap-unmatched-wrap');
   const unmatched=Object.keys(S.salaries).filter(dk=>!espnNames.includes(dk));
