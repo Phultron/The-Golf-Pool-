@@ -763,16 +763,34 @@ function removeP(i){const nm=S.participants[i];S.participants.splice(i,1);delete
 
 // ── Standings ──────────────────────────────────────
 function calcP(name){
-  const picks=(S.picks[name]||[]).filter(x=>x);let total=0,cutCount=0,best=999,spend=0;
+  const picks=(S.picks[name]||[]).filter(x=>x);let cutCount=0,best=999,spend=0;
   const gdata=picks.map(g=>{
     const sc=S.scores[g]||{score:'E',n:0,made_cut:true};const scoreNum=sc.n||0;
     const hasScores=Object.keys(S.scores).length>0;
     const madeCut=!hasScores?true:sc.made_cut!==false;
-    total+=scoreNum;if(scoreNum<best)best=scoreNum;if(madeCut)cutCount++;spend+=Number(S.salaries[g])||0;
-    return{name:g,score:sc.score||'E',madeCut};
+    if(scoreNum<best)best=scoreNum;if(madeCut)cutCount++;spend+=Number(S.salaries[g])||0;
+    return{name:g,score:sc.score||'E',madeCut,n:scoreNum};
   });
+  // Sort by score ascending (best = lowest) and sum only top 4
+  const sorted=[...gdata].sort((a,b)=>a.n-b.n);
+  const top4=sorted.slice(0,4);
+  const total=top4.reduce((s,g)=>s+g.n,0);
+  // Mark which golfers are in the top 4 vs bottom 2
+  const top4names=new Set(top4.map(g=>g.name));
+  // If two golfers have same score, need to track by index not just name
+  const top4indices=new Set();
+  let counted=0;
+  gdata.forEach((g,i)=>{
+    const inSorted=sorted.findIndex((s,si)=>s.name===g.name&&!top4indices.has(si));
+    // simpler: just mark the 4 lowest by re-sorting with index
+  });
+  // Rebuild with inTop4 flag using stable sort
+  const indexedGdata=gdata.map((g,i)=>({...g,origIdx:i}));
+  const sortedIndexed=[...indexedGdata].sort((a,b)=>a.n-b.n);
+  const top4Set=new Set(sortedIndexed.slice(0,4).map(g=>g.origIdx));
+  const gdataFinal=gdata.map((g,i)=>({...g,inTop4:top4Set.has(i)}));
   const elim=S.cutOfficial&&cutCount<(S.cutMin||4);
-  return{name,picks,gdata,total,cutCount,best,elim,spend,active:picks.length>0};
+  return{name,picks,gdata:gdataFinal,total,cutCount,best,elim,spend,active:picks.length>0};
 }
 function renderStandings(){
   const fee=S.fee||10;const cnt=S.participants.length;
@@ -811,9 +829,13 @@ function renderStandings(){
         const sc=S.scores[g.name]||{};
         const todayBadge=sc.today?'<span style="font-family:var(--fm);font-size:.65rem;opacity:.8;margin-left:1px">'+sc.today+'</span>':'';
         const thruBadge=sc.thru?'<span style="font-size:.6rem;color:var(--txt3);font-family:var(--fm);margin-left:1px">'+sc.thru+'</span>':'';
-        // Only apply cut styling when cut is officially declared
         const cutDisplay=!g.madeCut&&S.cutOfficial;
-        return'<span class="chip '+(cutDisplay?'xc':'mc')+'" style="'+(cutDisplay?'opacity:.5':'')+'">'+g.name+' '+sbadge(g.score)+todayBadge+thruBadge+'</span>';
+        // Bottom 2 (not in top 4) shown dimmed with dashed border
+        const notCounting=!g.inTop4;
+        const chipStyle=cutDisplay?'opacity:.5':(notCounting?'opacity:.55':'');
+        const chipClass=cutDisplay?'xc':(notCounting?'':'mc');
+        const borderStyle=notCounting&&!cutDisplay?';border-style:dashed':'';
+        return'<span class="chip '+chipClass+'" style="'+chipStyle+borderStyle+'">'+g.name+' '+sbadge(g.score)+todayBadge+thruBadge+'</span>';
       }).join('')+'</div></div>';
   }).join('');
   renderBanner();
