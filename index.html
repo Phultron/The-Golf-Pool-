@@ -829,7 +829,16 @@ async function fetchField(){
     S.scores={};
     players.forEach(function(p,i){
       var f=S.field[i];
-      var isCut=f.status.toUpperCase().includes('CUT');
+
+      // Only use manual/dropdown cut system — ignore ESPN CUT status
+      var isCut=false;
+      // Manual cuts (textarea / overrides)
+      if(S.manualCuts&&S.manualCuts[f.name]){isCut=true;}
+      // If the cutline dropdown is set and cut is official, apply score-based cut
+      if(S.cutOfficial&&S.cutlineScore!==null&&S.cutlineScore!==undefined){
+        var n=s2n(f.score);
+        if(n>=S.cutlineScore)isCut=true;
+      }
 
       // Today's round score + thru hole
       var todayScore=null;var thru=null;
@@ -839,12 +848,9 @@ async function fetchField(){
         if(lastRound){
           var dv=lastRound.displayValue||'';
           var val=lastRound.value;
-          // Thru hole
           if(lastRound.period!==undefined)thru=lastRound.period;
           if(p.status&&p.status.period)thru=p.status.period;
-          // Try to get hole-by-hole thru from competitor status
           if(p.status&&p.status.thru!==undefined)thru=p.status.thru;
-          // Score relative to par
           if(dv&&dv!=='0'&&dv!=='-'){
             var dvNum=parseInt(dv.replace('+',''));
             if(!isNaN(dvNum)){
@@ -856,7 +862,7 @@ async function fetchField(){
           }
         }
       }
-      // Thru display: F if finished, H# if in progress
+      // Thru display
       var thruDisplay=null;
       if(isCut){thruDisplay='CUT';}
       else if(p.status&&p.status.type){
@@ -969,17 +975,8 @@ function calcP(name){
     const scoreNum=sc.n||0;
     // Cutline: if cut is official and cutlineScore is set, use score comparison
     // Otherwise fall back to API made_cut flag and manual overrides
-    let madeCut;
     const hasScores=Object.keys(S.scores).length>0;
-    if(S.cutOfficial&&S.cutlineScore!==null&&S.cutlineScore!==undefined&&hasScores){
-      madeCut=scoreNum<S.cutlineScore;
-    } else if(!hasScores){
-      // No scores loaded yet — assume everyone made the cut
-      madeCut=true;
-    } else {
-      const manualCut=S.manualCuts&&S.manualCuts[g];
-      madeCut=!manualCut&&sc.made_cut!==false;
-    }
+    const madeCut=!hasScores?true:sc.made_cut!==false;
     total+=scoreNum;if(scoreNum<best)best=scoreNum;
     if(madeCut)cutCount++;
     spend+=Number(S.salaries[g])||0;
