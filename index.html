@@ -764,30 +764,30 @@ function removeP(i){const nm=S.participants[i];S.participants.splice(i,1);delete
 // ── Standings ──────────────────────────────────────
 function calcP(name){
   const picks=(S.picks[name]||[]).filter(x=>x);let cutCount=0,best=999,spend=0;
+  const hasScores=Object.keys(S.scores).length>0;
   const gdata=picks.map(g=>{
-    const sc=S.scores[g]||{score:'E',n:0,made_cut:true};const scoreNum=sc.n||0;
-    const hasScores=Object.keys(S.scores).length>0;
-    const madeCut=!hasScores?true:sc.made_cut!==false;
-    if(scoreNum<best)best=scoreNum;if(madeCut)cutCount++;spend+=Number(S.salaries[g])||0;
+    const sc=S.scores[g]||{score:'E',n:0,made_cut:true};
+    const scoreNum=sc.n||0;
+    // Determine cut status — use cutline score if set, else fall back to made_cut flag
+    let madeCut;
+    if(!hasScores){
+      madeCut=true; // no scores loaded yet, assume everyone in
+    } else if(S.cutOfficial&&S.cutlineScore!==null&&S.cutlineScore!==undefined){
+      madeCut=scoreNum<S.cutlineScore; // survived if score is BELOW cutline
+    } else if(S.manualCuts&&S.manualCuts[g]){
+      madeCut=false;
+    } else {
+      madeCut=true; // ignore ESPN cut status entirely
+    }
+    if(scoreNum<best)best=scoreNum;
+    if(madeCut)cutCount++;
+    spend+=Number(S.salaries[g])||0;
     return{name:g,score:sc.score||'E',madeCut,n:scoreNum};
   });
-  // Sort by score ascending (best = lowest) and sum only top 4
-  const sorted=[...gdata].sort((a,b)=>a.n-b.n);
-  const top4=sorted.slice(0,4);
-  const total=top4.reduce((s,g)=>s+g.n,0);
-  // Mark which golfers are in the top 4 vs bottom 2
-  const top4names=new Set(top4.map(g=>g.name));
-  // If two golfers have same score, need to track by index not just name
-  const top4indices=new Set();
-  let counted=0;
-  gdata.forEach((g,i)=>{
-    const inSorted=sorted.findIndex((s,si)=>s.name===g.name&&!top4indices.has(si));
-    // simpler: just mark the 4 lowest by re-sorting with index
-  });
-  // Rebuild with inTop4 flag using stable sort
-  const indexedGdata=gdata.map((g,i)=>({...g,origIdx:i}));
-  const sortedIndexed=[...indexedGdata].sort((a,b)=>a.n-b.n);
+  // Sort by score ascending and sum only top 4
+  const sortedIndexed=[...gdata.map((g,i)=>({...g,origIdx:i}))].sort((a,b)=>a.n-b.n);
   const top4Set=new Set(sortedIndexed.slice(0,4).map(g=>g.origIdx));
+  const total=sortedIndexed.slice(0,4).reduce((s,g)=>s+g.n,0);
   const gdataFinal=gdata.map((g,i)=>({...g,inTop4:top4Set.has(i)}));
   const elim=S.cutOfficial&&cutCount<(S.cutMin||4);
   return{name,picks,gdata:gdataFinal,total,cutCount,best,elim,spend,active:picks.length>0};
