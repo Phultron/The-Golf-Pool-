@@ -311,7 +311,7 @@ let S={
   tournament:null,tournId:null,
   participants:['Mike','Dani','Nick','Kenzy','Logan','Scott','Andrew','Jana','Chris','Bryan','Jace'],
   draftOrder:null,draftMode:'random',picks:{},draftLog:[],draftComplete:false,currentDraftSlot:0,
-  field:[],scores:{},salaries:{},nameMap:{},eliminated:{},history:[],
+  field:[],scores:{},salaries:{},nameMap:{},eliminated:{},eliminatedHistory:[],history:[],
   isAdmin:false,adminName:'Andrew',
   fee:10,cap:50000,maxPick:2
 };
@@ -760,8 +760,17 @@ function calcP(name){
 function toggleEliminated(name){
   if(!S.isAdmin)return;
   if(!S.eliminated)S.eliminated={};
+  // Push to history for undo
+  if(!S.eliminatedHistory)S.eliminatedHistory=[];
+  S.eliminatedHistory.push(JSON.parse(JSON.stringify(S.eliminated)));
   if(S.eliminated[name])delete S.eliminated[name];
   else S.eliminated[name]=true;
+  save();renderStandings();
+}
+
+function undoElimination(){
+  if(!S.eliminatedHistory||!S.eliminatedHistory.length)return;
+  S.eliminated=S.eliminatedHistory.pop();
   save();renderStandings();
 }
 function renderStandings(){
@@ -773,7 +782,9 @@ function renderStandings(){
   if(!results.length){document.getElementById('standings-list').innerHTML='<div class="alert-i">No picks yet. Run the <strong>Draft</strong>.</div>';renderBanner();return;}
   results.sort((a,b)=>{if(a.elim&&!b.elim)return 1;if(!a.elim&&b.elim)return-1;if(a.total!==b.total)return a.total-b.total;if(b.cutCount!==a.cutCount)return b.cutCount-a.cutCount;return a.best-b.best;});
   const hasSal=hasSalaries();
-  const colHdr='<div style="display:grid;grid-template-columns:1fr 52px 52px 46px;padding:.15rem 1.1rem .25rem;align-items:center"><div></div><div class="col-hdr">Total</div><div class="col-hdr">Today</div><div class="col-hdr">Thru</div></div>';
+  const colHdr='<div style="display:grid;grid-template-columns:1fr 52px 52px 46px;padding:.15rem 1.1rem .25rem;align-items:center"><div>'
+    +(S.isAdmin&&S.eliminatedHistory&&S.eliminatedHistory.length?'<button class="btn bs bsm" onclick="undoElimination()" style="font-size:.72rem">↩ Undo</button>':'')
+    +'</div><div class="col-hdr">Total</div><div class="col-hdr">Today</div><div class="col-hdr">Thru</div></div>';
   document.getElementById('standings-list').innerHTML=colHdr+results.map((r,i)=>{
     const rank=i+1;
     const ts=r.total===0?'E':r.total>0?'+'+r.total:String(r.total);
@@ -825,7 +836,7 @@ function archiveTournament(){
   results.sort((a,b)=>{if(a.elim&&!b.elim)return 1;if(!a.elim&&b.elim)return-1;if(a.total!==b.total)return a.total-b.total;if(b.cutCount!==a.cutCount)return b.cutCount-a.cutCount;return a.best-b.best;});
   const pot=S.participants.length*(S.fee||10);const winner=results.find(r=>!r.elim);
   S.history.unshift({id:Date.now(),tournament:S.tournament,date:new Date().toISOString(),pot,winner:winner&&winner.name||'—',winnerScore:winner?winner.total:null,participants:S.participants.length,draftOrder:S.draftOrder,results:results.map(r=>({name:r.name,total:r.total,cutCount:r.cutCount,elim:r.elim,picks:r.picks,spend:r.spend}))});
-  S.tournament=null;S.tournId=null;S.picks={};S.draftLog=[];S.currentDraftSlot=0;S.draftComplete=false;S.draftOrder=null;S.scores={};S.field=[];S.salaries={};S.eliminated={};
+  S.tournament=null;S.tournId=null;S.picks={};S.draftLog=[];S.currentDraftSlot=0;S.draftComplete=false;S.draftOrder=null;S.scores={};S.field=[];S.salaries={};S.eliminated={};S.eliminatedHistory=[];
   save();alert('Tournament archived!');
   document.querySelectorAll('.nt').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.tc').forEach(x=>x.classList.remove('active'));
