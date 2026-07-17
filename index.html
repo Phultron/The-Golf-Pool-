@@ -270,29 +270,9 @@ input[type=checkbox]{width:auto;margin-right:.35rem;accent-color:var(--gl)}
   <div class="card"><h3 class="mb1">Entry Fee</h3>
     <div class="flex"><label style="white-space:nowrap;margin:0;color:var(--txt)">$ per participant:</label>
       <input type="number" id="fee-input" value="10" style="width:90px" onchange="saveSettings()"></div></div>
-  <div class="card"><h3 class="mb1">Cut Rule</h3>
-    <div class="flex"><label style="white-space:nowrap;margin:0;color:var(--txt)">Min golfers to survive cut:</label>
-      <input type="number" id="cutmin-input" min="1" max="6" value="4" style="width:70px" onchange="saveSettings()"></div></div>
   <div class="card"><h3 class="mb1">Max picks per golfer</h3>
     <div class="flex"><label style="white-space:nowrap;margin:0;color:var(--txt)">Max times a golfer can be drafted:</label>
       <input type="number" id="maxpick-input" min="1" max="11" value="2" style="width:70px" onchange="saveSettings()"></div></div>
-  <div class="card">
-    <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;margin:0;font-size:1rem;text-transform:none;letter-spacing:0;color:var(--txt)">
-      <input type="checkbox" id="cut-official" onchange="saveSettings();renderStandings();renderFieldTab()"> Cut is now official
-    </label>
-    <div id="cutline-wrap" style="margin-top:.75rem;display:none">
-      <div class="muted sm mb05">Golfers at or above this score missed the cut. Participants with fewer than <strong id="cutmin-display">4</strong> surviving golfers are eliminated.</div>
-      <div class="flex mt1" style="gap:.75rem;flex-wrap:wrap;align-items:center">
-        <div class="flex" style="gap:.5rem;align-items:center">
-          <label style="white-space:nowrap;margin:0;color:var(--txt);font-size:.88rem;text-transform:none;letter-spacing:0">Cut line score:</label>
-          <select id="cutline-score" onchange="saveSettings();renderStandings();renderFieldTab()" style="width:90px;font-family:var(--fm)">
-            <option value="">-- Set --</option>
-          </select>
-        </div>
-        <span id="cut-summary" class="sm muted"></span>
-      </div>
-    </div>
-  </div>
   <div class="admin-section" id="namemap-section" style="display:none">
     <h3 class="mb1">🔗 Name Mapping <span class="admin-badge">ADMIN ONLY</span></h3>
     <div class="muted sm mb1">Map DraftKings names to ESPN names when they don't match exactly.</div>
@@ -331,9 +311,9 @@ let S={
   tournament:null,tournId:null,
   participants:['Mike','Dani','Nick','Kenzy','Logan','Scott','Andrew','Jana','Chris','Bryan','Jace'],
   draftOrder:null,draftMode:'random',picks:{},draftLog:[],draftComplete:false,currentDraftSlot:0,
-  field:[],scores:{},salaries:{},nameMap:{},manualCuts:{},history:[],
+  field:[],scores:{},salaries:{},nameMap:{},eliminated:{},history:[],
   isAdmin:false,adminName:'Andrew',
-  fee:10,cap:50000,cutMin:4,cutOfficial:false,cutlineScore:null,maxPick:2
+  fee:10,cap:50000,maxPick:2
 };
 
 const SUPA_URL='https://qzmiyusbicdwfgefbvxu.supabase.co';
@@ -378,8 +358,8 @@ async function clearAll(){
   S=Object.assign(S,{tournament:null,tournId:null,
     participants:['Mike','Dani','Nick','Kenzy','Logan','Scott','Andrew','Jana','Chris','Bryan','Jace'],
     draftOrder:null,picks:{},draftLog:[],draftComplete:false,currentDraftSlot:0,
-    field:[],scores:{},salaries:{},nameMap:{},manualCuts:{},history:[],
-    fee:10,cap:50000,cutMin:4,cutOfficial:false,cutlineScore:null,maxPick:2});
+    field:[],scores:{},salaries:{},nameMap:{},eliminated:{},history:[],
+    fee:10,cap:50000,maxPick:2});
   localStorage.removeItem('gp_pool');await supaSave();location.reload();
 }
 function startSync(){
@@ -660,12 +640,8 @@ async function fetchField(){
     S.scores={};
     players.forEach(function(p,i){
       var f=S.field[i];
-      // Only use manual/dropdown cut system — ignore ESPN CUT status
+      // isCut is always false — elimination is handled manually by admin in standings
       var isCut=false;
-      if(S.manualCuts&&S.manualCuts[f.name])isCut=true;
-      if(S.cutOfficial&&S.cutlineScore!==null&&S.cutlineScore!==undefined){
-        if(s2n(f.score)>=S.cutlineScore)isCut=true;
-      }
       var todayScore=null;var thru=null;
       var linescores=p.linescores||[];
       if(linescores.length>0){
@@ -715,8 +691,8 @@ function renderFieldTab(){
   const el=document.getElementById('field-list');if(!S.field.length){el.innerHTML='<div class="muted">No field loaded.</div>';return;}
   const sorted=[...S.field].sort((a,b)=>s2n(a.score)-s2n(b.score));
   el.innerHTML='<table class="lbt"><thead><tr><th>Pos</th><th>Player</th><th>Total</th><th>Today</th><th>Salary</th><th>Status</th></tr></thead><tbody>'
-    +sorted.map(p=>{const sc=S.scores[p.name]||{};const missed=sc.made_cut===false&&S.cutOfficial;const sal=S.salaries[p.name]?'$'+Number(S.salaries[p.name]).toLocaleString():'-';
-      return'<tr><td style="color:var(--txt3);font-family:var(--fm);font-size:.78rem">'+p.pos+'</td><td style="'+(missed?'text-decoration:line-through;color:var(--txt3)':'')+'">'+p.name+'</td><td>'+sbadge(p.score)+'</td><td>'+(sc.today?sbadge(sc.today):'<span class="muted">—</span>')+'</td><td style="font-family:var(--fm);color:var(--gold);font-size:.82rem">'+sal+'</td><td class="sm" style="color:'+(missed?'var(--rl)':'var(--txt3)')+'">'+( missed?'Missed Cut':p.status||'Active')+'</td></tr>';}).join('')
+    +sorted.map(p=>{const sc=S.scores[p.name]||{};const sal=S.salaries[p.name]?'$'+Number(S.salaries[p.name]).toLocaleString():'-';
+      return'<tr><td style="color:var(--txt3);font-family:var(--fm);font-size:.78rem">'+p.pos+'</td><td>'+p.name+'</td><td>'+sbadge(p.score)+'</td><td>'+(sc.today?sbadge(sc.today):'<span class="muted">—</span>')+'</td><td style="font-family:var(--fm);color:var(--gold);font-size:.82rem">'+sal+'</td><td class="sm" style="color:var(--txt3)">'+( p.status||'Active')+'</td></tr>';}).join('')
     +'</tbody></table>';
 }
 function renderFieldTable(){
@@ -768,29 +744,25 @@ function calcP(name){
   const gdata=picks.map(g=>{
     const sc=S.scores[g]||{score:'E',n:0,made_cut:true};
     const scoreNum=sc.n||0;
-    // Determine cut status — use cutline score if set, else fall back to made_cut flag
-    let madeCut;
-    if(!hasScores){
-      madeCut=true; // no scores loaded yet, assume everyone in
-    } else if(S.cutOfficial&&S.cutlineScore!==null&&S.cutlineScore!==undefined){
-      madeCut=scoreNum<S.cutlineScore; // survived if score is BELOW cutline
-    } else if(S.manualCuts&&S.manualCuts[g]){
-      madeCut=false;
-    } else {
-      madeCut=true; // ignore ESPN cut status entirely
-    }
     if(scoreNum<best)best=scoreNum;
-    if(madeCut)cutCount++;
     spend+=Number(S.salaries[g])||0;
-    return{name:g,score:sc.score||'E',madeCut,n:scoreNum};
+    return{name:g,score:sc.score||'E',n:scoreNum};
   });
   // Sort by score ascending and sum only top 4
   const sortedIndexed=[...gdata.map((g,i)=>({...g,origIdx:i}))].sort((a,b)=>a.n-b.n);
   const top4Set=new Set(sortedIndexed.slice(0,4).map(g=>g.origIdx));
   const total=sortedIndexed.slice(0,4).reduce((s,g)=>s+g.n,0);
   const gdataFinal=gdata.map((g,i)=>({...g,inTop4:top4Set.has(i)}));
-  const elim=S.cutOfficial&&cutCount<(S.cutMin||4);
+  const elim=!!(S.eliminated&&S.eliminated[name]);
   return{name,picks,gdata:gdataFinal,total,cutCount,best,elim,spend,active:picks.length>0};
+}
+
+function toggleEliminated(name){
+  if(!S.isAdmin)return;
+  if(!S.eliminated)S.eliminated={};
+  if(S.eliminated[name])delete S.eliminated[name];
+  else S.eliminated[name]=true;
+  save();renderStandings();
 }
 function renderStandings(){
   const fee=S.fee||10;const cnt=S.participants.length;
@@ -800,10 +772,10 @@ function renderStandings(){
   const results=S.participants.map(p=>calcP(p)).filter(r=>r.active);
   if(!results.length){document.getElementById('standings-list').innerHTML='<div class="alert-i">No picks yet. Run the <strong>Draft</strong>.</div>';renderBanner();return;}
   results.sort((a,b)=>{if(a.elim&&!b.elim)return 1;if(!a.elim&&b.elim)return-1;if(a.total!==b.total)return a.total-b.total;if(b.cutCount!==a.cutCount)return b.cutCount-a.cutCount;return a.best-b.best;});
-  const cutMin=S.cutMin||4;const hasSal=hasSalaries();
+  const hasSal=hasSalaries();
   const colHdr='<div style="display:grid;grid-template-columns:1fr 52px 52px 46px;padding:.15rem 1.1rem .25rem;align-items:center"><div></div><div class="col-hdr">Total</div><div class="col-hdr">Today</div><div class="col-hdr">Thru</div></div>';
   document.getElementById('standings-list').innerHTML=colHdr+results.map((r,i)=>{
-    const rank=i+1;const warn=!S.cutOfficial&&r.cutCount<cutMin;
+    const rank=i+1;
     const ts=r.total===0?'E':r.total>0?'+'+r.total:String(r.total);
     let medal='';
     if(r.elim)medal='<span style="color:var(--rl);font-size:1rem">✕</span>';
@@ -812,15 +784,17 @@ function renderStandings(){
     else if(rank===3)medal='<span class="medal m3">3</span>';
     else medal='<span style="color:var(--txt3);font-family:var(--fm);font-size:.8rem;width:22px;text-align:center;display:inline-block">'+rank+'</span>';
     const budgetStr=hasSal&&r.spend?' · $'+r.spend.toLocaleString():'';
-    const missedCount=r.gdata.filter(g=>!g.madeCut).length;
+    const elimIndicator=S.isAdmin
+      ?'<button onclick="toggleEliminated(\''+r.name.replace(/'/g,"\\'")+'\',event)" title="'+(r.elim?'Click to reinstate':'Click to eliminate')+'" style="background:'+(r.elim?'var(--red)':'rgba(168,201,180,.15)')+';border:1px solid '+(r.elim?'var(--red)':'var(--bdr)')+';color:'+(r.elim?'#fff':'var(--txt3)')+';border-radius:20px;font-size:.62rem;padding:.1rem .5rem;cursor:pointer;font-family:var(--fb);font-weight:500;flex-shrink:0;white-space:nowrap">'+(r.elim?'✕ OUT':'· · ·')+'</button>'
+      :(r.elim?'<span style="background:rgba(192,57,43,.2);color:var(--rl);border:1px solid var(--red);font-size:.62rem;padding:.1rem .45rem;border-radius:20px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;flex-shrink:0">OUT</span>':'');
     const todaySum=r.gdata.reduce((sum,g)=>{const sc=S.scores[g.name]||{};return sum+(sc.today?s2n(sc.today):0);},0);
     const hasTodayData=r.gdata.some(g=>S.scores[g.name]&&S.scores[g.name].today);
     const todayStr=hasTodayData?(todaySum===0?'E':todaySum>0?'+'+todaySum:String(todaySum)):null;
     return'<div class="prow '+(r.elim?'elim':'')+' '+(rank===1&&!r.elim?'lead':'')+'" style="'+(r.elim?'opacity:.45;filter:grayscale(0.6)':'')+'"><div style="display:grid;grid-template-columns:1fr 52px 52px 46px;align-items:center;gap:.25rem">'
       +'<div class="flex" style="min-width:0;overflow:hidden">'+medal
       +'<span class="pname" style="'+(r.elim?'text-decoration:line-through;color:var(--txt3)':'')+';">'+r.name+'</span>'
-      +(r.elim?'<span style="background:rgba(192,57,43,.2);color:var(--rl);border:1px solid var(--red);font-size:.62rem;padding:.1rem .45rem;border-radius:20px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;flex-shrink:0">elim · '+missedCount+' cut</span>':'')
-      +(warn?'<span class="sm" style="color:var(--rl);white-space:nowrap;flex-shrink:0">⚠ '+r.cutCount+'/'+r.picks.length+'</span>':'')
+      +elimIndicator
+      +(r.elim?'':'')
       +'<span class="sm muted" style="white-space:nowrap;flex-shrink:0">'+r.cutCount+'/'+r.picks.length+' cut'+budgetStr+'</span></div>'
       +'<div class="score-col">'+sbadge(ts)+'</div>'
       +'<div class="score-col">'+(todayStr?sbadge(todayStr):'<span class="muted" style="font-size:.75rem">—</span>')+'</div>'
@@ -829,13 +803,10 @@ function renderStandings(){
         const sc=S.scores[g.name]||{};
         const todayBadge=sc.today?'<span style="font-family:var(--fm);font-size:.65rem;opacity:.8;margin-left:1px">'+sc.today+'</span>':'';
         const thruBadge=sc.thru?'<span style="font-size:.6rem;color:var(--txt3);font-family:var(--fm);margin-left:1px">'+sc.thru+'</span>':'';
-        const cutDisplay=!g.madeCut&&S.cutOfficial;
-        // Bottom 2 (not in top 4) shown dimmed with dashed border
         const notCounting=!g.inTop4;
-        const chipStyle=cutDisplay?'opacity:.5':(notCounting?'opacity:.55':'');
-        const chipClass=cutDisplay?'xc':(notCounting?'':'mc');
-        const borderStyle=notCounting&&!cutDisplay?';border-style:dashed':'';
-        return'<span class="chip '+chipClass+'" style="'+chipStyle+borderStyle+'">'+g.name+' '+sbadge(g.score)+todayBadge+thruBadge+'</span>';
+        const chipStyle=notCounting?'opacity:.55':'';
+        const borderStyle=notCounting?';border-style:dashed':'';
+        return'<span class="chip mc" style="'+chipStyle+borderStyle+'">'+g.name+' '+sbadge(g.score)+todayBadge+thruBadge+'</span>';
       }).join('')+'</div></div>';
   }).join('');
   renderBanner();
@@ -854,7 +825,7 @@ function archiveTournament(){
   results.sort((a,b)=>{if(a.elim&&!b.elim)return 1;if(!a.elim&&b.elim)return-1;if(a.total!==b.total)return a.total-b.total;if(b.cutCount!==a.cutCount)return b.cutCount-a.cutCount;return a.best-b.best;});
   const pot=S.participants.length*(S.fee||10);const winner=results.find(r=>!r.elim);
   S.history.unshift({id:Date.now(),tournament:S.tournament,date:new Date().toISOString(),pot,winner:winner&&winner.name||'—',winnerScore:winner?winner.total:null,participants:S.participants.length,draftOrder:S.draftOrder,results:results.map(r=>({name:r.name,total:r.total,cutCount:r.cutCount,elim:r.elim,picks:r.picks,spend:r.spend}))});
-  S.tournament=null;S.tournId=null;S.picks={};S.draftLog=[];S.currentDraftSlot=0;S.draftComplete=false;S.draftOrder=null;S.scores={};S.field=[];S.salaries={};S.cutOfficial=false;S.cutlineScore=null;S.manualCuts={};
+  S.tournament=null;S.tournId=null;S.picks={};S.draftLog=[];S.currentDraftSlot=0;S.draftComplete=false;S.draftOrder=null;S.scores={};S.field=[];S.salaries={};S.eliminated={};
   save();alert('Tournament archived!');
   document.querySelectorAll('.nt').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.tc').forEach(x=>x.classList.remove('active'));
@@ -990,21 +961,8 @@ function updateAdminUI(){
 function saveSettings(){
   S.fee=parseInt(document.getElementById('fee-input').value)||10;
   S.cap=parseInt(document.getElementById('cap-input').value)||50000;
-  S.cutMin=parseInt(document.getElementById('cutmin-input').value)||4;
   S.maxPick=parseInt(document.getElementById('maxpick-input').value)||2;
-  S.cutOfficial=document.getElementById('cut-official').checked;
-  const clEl=document.getElementById('cutline-score');
-  S.cutlineScore=(clEl&&clEl.value!=='')?parseInt(clEl.value):null;
-  const clWrap=document.getElementById('cutline-wrap');if(clWrap)clWrap.style.display=S.cutOfficial?'block':'none';
-  const cmd=document.getElementById('cutmin-display');if(cmd)cmd.textContent=S.cutMin||4;
-  updateCutSummary();save();
-}
-function updateCutSummary(){
-  const el=document.getElementById('cut-summary');if(!el)return;
-  if(!S.cutOfficial||S.cutlineScore===null||S.cutlineScore===undefined){el.textContent='';return;}
-  const cutN=S.field.filter(function(f){return s2n(f.score)>=S.cutlineScore;}).length;
-  const scoreStr=S.cutlineScore<0?String(S.cutlineScore):S.cutlineScore===0?'E':'+'+S.cutlineScore;
-  el.textContent=cutN+' golfer'+(cutN!==1?'s':'')+' at '+scoreStr+' or worse are cut.';
+  save();
 }
 
 // ── Boot ───────────────────────────────────────────
@@ -1013,14 +971,7 @@ function updateCutSummary(){
   load();await supaLoad();
   const fi=document.getElementById('fee-input');if(fi)fi.value=S.fee||10;
   const ci=document.getElementById('cap-input');if(ci)ci.value=S.cap||50000;
-  const cmi=document.getElementById('cutmin-input');if(cmi)cmi.value=S.cutMin||4;
   const mpi=document.getElementById('maxpick-input');if(mpi)mpi.value=S.maxPick||2;
-  const clSelEl=document.getElementById('cutline-score');
-  if(clSelEl){for(var cutIdx=-5;cutIdx<=25;cutIdx++){var cutOpt=document.createElement('option');cutOpt.value=cutIdx;cutOpt.textContent=cutIdx<0?String(cutIdx):cutIdx===0?'E':'+'+cutIdx;clSelEl.appendChild(cutOpt);}}
-  const co=document.getElementById('cut-official');if(co)co.checked=!!S.cutOfficial;
-  const clWrap=document.getElementById('cutline-wrap');if(clWrap)clWrap.style.display=S.cutOfficial?'block':'none';
-  const clEl2=document.getElementById('cutline-score');if(clEl2&&S.cutlineScore!==null&&S.cutlineScore!==undefined)clEl2.value=S.cutlineScore;
-  const cmd=document.getElementById('cutmin-display');if(cmd)cmd.textContent=S.cutMin||4;
   try{const adm=JSON.parse(localStorage.getItem('gp_admin')||'{}');if(adm.isAdmin&&adm.expires&&Date.now()<adm.expires)S.isAdmin=true;}catch(e){}
   updateAdminUI();renderBanner();renderStandings();
   if(S.tournId)fetchField();startSync();
